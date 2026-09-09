@@ -1,0 +1,14 @@
+{
+  "name": "Grimoire",
+  "short_name": "Grimoire",
+  "description": "A personal Magic: The Gathering library, deck builder, and play journal.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0a1e",
+  "theme_color": "#0d0a1e",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

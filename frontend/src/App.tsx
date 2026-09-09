@@ -58,7 +58,10 @@ export default function App() {
       <a className="skip" href="#main">Skip to main content</a>
       <div className="shell">
         <nav className="rail" aria-label="Grimoire sections">
-          <p className="brand">Grimoire</p>
+          <p className="brand">
+            <img src="/icon.png" alt="" width="30" height="30" className="brandmark" />
+            Grimoire
+          </p>
           <p className="brandsub">Your library, your decks, your notes.</p>
 
           <div role="tablist" aria-label="Grimoire sections" aria-orientation="vertical">

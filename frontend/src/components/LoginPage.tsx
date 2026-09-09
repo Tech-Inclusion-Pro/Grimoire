@@ -28,8 +28,12 @@ export default function LoginPage({ onSignedIn }: { onSignedIn: () => void }) {
   return (
     <main className="main" style={{ maxWidth: 440, margin: '10vh auto' }}>
       <div className="tile">
-        <h1>Grimoire</h1>
-        <p className="lede">Sign in to reach the collection.</p>
+        <img src="/icon.png" alt="" width="72" height="72"
+             style={{ display: 'block', margin: '0 auto 14px' }} />
+        <h1 style={{ textAlign: 'center' }}>Grimoire</h1>
+        <p className="lede" style={{ textAlign: 'center' }}>
+          Sign in to reach the collection.
+        </p>
         <form onSubmit={submit}>
           <div style={{ marginBottom: 14 }}>
             <label htmlFor="username">Username</label>

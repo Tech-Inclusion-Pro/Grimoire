@@ -161,6 +161,12 @@ FastAPI serves as a single-page app. Same arrangement as the server dashboard.
 - **Use pointer events, not HTML5 drag-and-drop.** HTML5 drag does not fire on
   touch, which is most of how this app is used. `touch-action: none` on the
   field stops the browser scrolling instead of dragging.
+- **A drag threshold measures distance from the press, never `e.movementX`.**
+  `movementX` is the delta since the *previous* event: a real mouse moved slowly
+  reports 1-2px and never crosses any threshold, and on touch it is 0 in most
+  browsers. Dragging worked only for synthetic events that set `movementX` by
+  hand — the test passed and the feature was broken on every real device.
+  When simulating input, simulate what devices actually send.
 - **One drag system for every zone**, hoisted into `Playtest`. Drop targets are
   whole `<section>`s carrying `data-zone`: an inner wrapper meant a drop on the
   section's padding hit the `<section>` itself, and `closest()` cannot reach a

@@ -406,3 +406,8 @@ input[type="range"] { height: 32px; accent-color: var(--magenta); }
   filter: drop-shadow(0 12px 22px rgba(0,0,0,.6));
 }
 .dragghost img, .dragghost .art-missing { border-radius: 5px; width: 100%; display: block; }
+
+/* The mark is decorative — the wordmark beside it carries the name, so the
+   image has an empty alt and is not announced twice. */
+.brand { display: flex; align-items: center; gap: 9px; }
+.brandmark { border-radius: 50%; flex: none; }

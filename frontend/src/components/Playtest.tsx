@@ -51,6 +51,10 @@ const dressed = (c: Card): CardState => ({ ...c, tapped: false, counters: 0 })
 const CARD_W = 104
 const CARD_H = 145
 
+// How far a pointer must travel before a press becomes a drag rather than a
+// tap. Big enough to survive a shaky thumb, small enough not to feel sticky.
+const DRAG_THRESHOLD = 6
+
 /** Where a card lands when it enters the battlefield. Cascades so a turn's
  *  worth of permanents does not pile up on one spot, and wraps into rows
  *  rather than running off the right edge. */
@@ -79,7 +83,9 @@ export default function Playtest({ id }: { id: number }) {
 
   // One drag system for every zone. `moved` is what separates a tap from a
   // drag; without it every attempt to pick a card up would also tap it.
-  const drag = useRef<{ uid: string; from: Zone; moved: boolean } | null>(null)
+  const drag = useRef<
+    { uid: string; from: Zone; moved: boolean; startX: number; startY: number } | null
+  >(null)
   const [ghost, setGhost] = useState<{ card: CardState; x: number; y: number } | null>(null)
   const [overZone, setOverZone] = useState<Zone | null>(null)
 
@@ -204,15 +210,23 @@ export default function Playtest({ id }: { id: number }) {
       onPointerDown: (e: React.PointerEvent) => {
         if (e.button !== 0) return
         ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-        drag.current = { uid: card.uid, from, moved: false }
+        drag.current = {
+          uid: card.uid, from, moved: false,
+          startX: e.clientX, startY: e.clientY,
+        }
         if (from === 'battlefield') setSelected(card.uid)
       },
       onPointerMove: (e: React.PointerEvent) => {
         const d = drag.current
         if (!d || d.uid !== card.uid) return
         if (!d.moved) {
-          // A few pixels of slop, so a shaky thumb still reads as a tap.
-          if (Math.abs(e.movementX) + Math.abs(e.movementY) < 3 && !ghost) return
+          // Distance from where the press started, NOT e.movementX. movementX
+          // is the delta since the previous event: a real mouse moved slowly
+          // reports 1-2px per event and never crosses any threshold, and on
+          // touch it is 0 in most browsers. Measuring per-event meant dragging
+          // worked only for synthetic events that set movementX by hand.
+          const travelled = Math.hypot(e.clientX - d.startX, e.clientY - d.startY)
+          if (travelled < DRAG_THRESHOLD) return
           d.moved = true
         }
         setGhost({ card, x: e.clientX, y: e.clientY })

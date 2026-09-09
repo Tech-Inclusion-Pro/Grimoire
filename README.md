@@ -1,7 +1,15 @@
-# Grimoire
+<p align="center">
+  <img src="docs/icon.png" alt="" width="140" height="140">
+</p>
 
-A personal Magic: The Gathering library, deck builder, and play journal that
-runs on your own machine.
+<h1 align="center">Grimoire</h1>
+
+<p align="center">
+  A personal Magic: The Gathering library, deck builder, and play journal that
+  runs on your own machine.
+</p>
+
+---
 
 Grimoire only ever searches cards you physically own, keeps deck notes as
 markdown in your own Obsidian vault rather than in someone else's database, and
