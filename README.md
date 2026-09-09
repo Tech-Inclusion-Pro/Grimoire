@@ -288,6 +288,8 @@ card grid gives every card its full frame rather than tightening it for density.
 Magic: The Gathering is a trademark of Wizards of the Coast. This project is
 unaffiliated with, and unendorsed by, Wizards of the Coast or Scryfall.
 
+Grimoire itself is licensed under [Apache 2.0](LICENSE).
+
 ---
 
 ## Development
