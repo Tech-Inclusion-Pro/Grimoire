@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grimoire — Atrium module, Mycelium Filament (interface mockup)</title>
+<style>
+  :root {
+    /* Tech Inclusion Pro brand */
+    --magenta: #a23b84;
+    --indigo:  #3a2b95;
+    --purple:  #6f2fa6;
+
+    /* Filament substrate */
+    --bg:        #0d0a1e;
+    --bg-2:      #130f2b;
+
+    /* Glass tiles */
+    --glass:      rgba(255,255,255,0.045);
+    --glass-hi:   rgba(255,255,255,0.075);
+    --glass-edge: rgba(255,255,255,0.10);
+    --glass-lit:  rgba(238,176,218,0.34);
+
+    /* Filament threads */
+    --thread:     rgba(162,59,132,0.30);
+    --thread-dim: rgba(111,47,166,0.18);
+
+    /* Text — checked for WCAG AA against the substrate */
+    --ink:       #f5f3fb;   /* ~16:1 */
+    --ink-mid:   #c3bde0;   /* ~9:1  */
+    --ink-low:   #9d96c4;   /* ~5.6:1, never below 14px */
+    --tint-mag:  #f0b5dc;
+    --tint-pur:  #cfb1f2;
+
+    /* Icon stroke — brand magenta lifted to clear 3:1 against the substrate */
+    --icon:      #d16bb0;
+
+    --r: 14px;
+    --r-sm: 8px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--ink);
+    background:
+      radial-gradient(900px 620px at 12% -8%,  rgba(58,43,149,0.55), transparent 62%),
+      radial-gradient(760px 560px at 92% 4%,   rgba(162,59,132,0.30), transparent 60%),
+      radial-gradient(700px 700px at 62% 108%, rgba(111,47,166,0.28), transparent 62%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* Filament webbing behind everything */
+  .filaments { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .55; }
+
+  :focus-visible { outline: 3px solid #ffd84d; outline-offset: 2px; border-radius: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+
+  .skip { position: absolute; left: -9999px; background: var(--ink); color: var(--bg); padding: 10px 16px; z-index: 99; font-weight: bold; }
+  .skip:focus { left: 10px; top: 10px; }
+
+  /* ---------- Glass tile ---------- */
+  .tile {
+    background: var(--glass);
+    border: 1px solid var(--glass-edge);
+    border-radius: var(--r);
+    backdrop-filter: blur(16px) saturate(1.25);
+    -webkit-backdrop-filter: blur(16px) saturate(1.25);
+    padding: 20px 22px;
+    position: relative;
+  }
+  /* the lit top edge — the filament "seam" */
+  .tile::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass-lit) 22%, var(--glass-lit) 78%, transparent);
+    border-radius: var(--r) var(--r) 0 0;
+  }
+
+  /* ---------- Shell ---------- */
+  .shell { position: relative; z-index: 1; display: grid; grid-template-columns: 246px 1fr; min-height: 100vh; }
+
+  .rail {
+    padding: 22px 16px;
+    background: rgba(13,10,30,0.55);
+    border-right: 1px solid var(--glass-edge);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .brandrow { display: flex; align-items: center; gap: 11px; margin: 2px 0 4px 4px; }
+  /* Nucleus mark — cell body with cilia */
+  .nucleus { width: 30px; height: 30px; flex: none; }
+  .wordmark { font-size: 20px; font-weight: bold; letter-spacing: -0.01em; margin: 0; }
+  .wordmark-sub { font-size: 12px; color: var(--ink-mid); margin: 0 0 22px 4px; }
+
+  [role="tablist"] { display: flex; flex-direction: column; gap: 2px; }
+
+  .tab {
+    display: flex; align-items: center; gap: 11px; width: 100%;
+    background: none; border: 1px solid transparent; border-radius: var(--r-sm);
+    color: var(--ink-mid); font: inherit; font-size: 15px;
+    padding: 10px 12px; cursor: pointer; text-align: left;
+  }
+  /* Rail icons: outline strokes, one unified colour across every item */
+  .tab svg {
+    width: 20px; height: 20px; flex: none;
+    fill: none; stroke: var(--icon);
+    stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+    transition: stroke .14s ease;
+  }
+  .tab:hover { background: var(--glass-hi); color: var(--ink); }
+  .tab:hover svg { stroke: var(--tint-mag); }
+  .tab[aria-selected="true"] {
+    background: var(--glass-hi); border-color: var(--glass-lit);
+    color: var(--ink); font-weight: bold;
+  }
+  .tab[aria-selected="true"] svg {
+    stroke: var(--tint-mag);
+    filter: drop-shadow(0 0 6px rgba(240,181,220,0.5));
+  }
+  .tab .count { margin-left: auto; font-weight: normal; font-size: 13px; color: var(--ink-low); }
+
+  .railfoot { margin-top: 26px; padding: 13px 14px; font-size: 12.5px; color: var(--ink-mid); line-height: 1.5;
+              border: 1px solid var(--glass-edge); border-radius: var(--r-sm); background: var(--glass); }
+  .live { display:inline-block; width:8px; height:8px; border-radius:50%; background:#63e3a6; margin-right:7px; }
+
+  main { padding: 28px 32px 64px; max-width: 1320px; }
+
+  h1 { font-size: 27px; margin: 0 0 5px; letter-spacing: -0.015em; }
+  h2 { font-size: 18px; margin: 0 0 14px; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+  .lede { color: var(--ink-mid); margin: 0 0 24px; max-width: 68ch; }
+  .note { font-size: 13px; color: var(--ink-mid); }
+  .note code { background: rgba(255,255,255,.07); padding: 1px 6px; border-radius: 4px; color: var(--tint-pur); }
+
+  /* ---------- Controls ---------- */
+  input[type="text"], input[type="search"], textarea, select {
+    background: rgba(0,0,0,0.34); color: var(--ink);
+    border: 1px solid var(--glass-edge); border-radius: var(--r-sm);
+    font: inherit; padding: 11px 13px; width: 100%;
+  }
+  input::placeholder, textarea::placeholder { color: #918ab6; }
+
+  .btn {
+    background: linear-gradient(135deg, var(--purple), var(--magenta));
+    color: #fff; border: 0; font: inherit; font-weight: bold;
+    padding: 11px 20px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover { filter: brightness(1.13); }
+  .btn-quiet { background: var(--glass-hi); border: 1px solid var(--glass-edge); color: var(--ink); font-weight: normal; }
+  .btn-quiet:hover { background: rgba(255,255,255,.12); filter: none; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0 22px; }
+  .chip {
+    background: var(--glass); border: 1px solid var(--glass-edge); color: var(--ink);
+    font: inherit; font-size: 13.5px; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: rgba(162,59,132,.42); border-color: var(--glass-lit); font-weight: bold; }
+  .chip[aria-pressed="true"]::before { content: "\2713\00a0"; }
+
+  /* ---------- Cards ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 17px; }
+  .cardbtn { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; text-align: left; }
+  .cardface {
+    aspect-ratio: 63 / 88; border-radius: 11px; border: 1px solid rgba(0,0,0,.5);
+    padding: 8px; display: flex; flex-direction: column; position: relative;
+    box-shadow: 0 6px 20px rgba(0,0,0,.45);
+    transition: transform .14s ease, box-shadow .14s ease;
+  }
+  .cardbtn:hover .cardface { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,.55), 0 0 0 1px var(--glass-lit); }
+  .c-W { background: linear-gradient(160deg,#efe7cf,#d5c8a3); color:#221c0d; }
+  .c-U { background: linear-gradient(160deg,#b6d4ea,#7aa6cc); color:#0c2132; }
+  .c-B { background: linear-gradient(160deg,#5f5a68,#332f3d); color:#f0edf5; }
+  .c-R { background: linear-gradient(160deg,#e7a68b,#c86e51); color:#2b1008; }
+  .c-G { background: linear-gradient(160deg,#a9c9a3,#6c996f); color:#0e2211; }
+  .c-M { background: linear-gradient(160deg,#e0c983,#bca156); color:#292007; }
+  .c-C { background: linear-gradient(160deg,#c4c2cc,#92909d); color:#1c1b24; }
+  .cf-name { font-size: 11.5px; font-weight: bold; line-height: 1.25; }
+  .cf-art { flex: 1; margin: 6px 0; border-radius: 3px; background: rgba(0,0,0,.22);
+            display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: .7; }
+  .cf-type { font-size: 9.5px; border-top: 1px solid rgba(0,0,0,.3); padding-top: 4px; }
+  .qty { position: absolute; top: -8px; right: -8px; background: linear-gradient(135deg,var(--purple),var(--magenta));
+         color:#fff; font-size:12px; font-weight:bold; min-width:25px; height:25px; line-height:23px;
+         border:2px solid var(--bg); border-radius:999px; text-align:center; }
+  .foil { position:absolute; bottom:6px; right:6px; background: var(--indigo); color:#fff;
+          font-size:9px; font-weight:bold; padding:2px 6px; border-radius:3px; }
+  .cardmeta { font-size: 12px; color: var(--ink-mid); margin-top: 8px; }
+  .cardmeta strong { display: block; color: var(--ink); font-size: 13px; }
+
+  /* ---------- DECK LIBRARY ---------- */
+  .library { display: grid; grid-template-columns: repeat(auto-fill, minmax(272px, 1fr)); gap: 20px; }
+
+  .deckcard {
+    text-align: left; font: inherit; color: inherit; cursor: pointer; padding: 0;
+    background: var(--glass); border: 1px solid var(--glass-edge); border-radius: var(--r);
+    overflow: hidden; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    transition: transform .14s ease, box-shadow .14s ease;
+  }
+  .deckcard:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(0,0,0,.5), 0 0 0 1px var(--glass-lit); }
+
+  /* Commander art crop sits behind a scrim so the name stays legible */
+  .cover { height: 126px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .cover-art { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+               font-size: 10.5px; letter-spacing: .02em; opacity: .5; text-align: center; padding: 10px; }
+  .cover::after { content: ""; position: absolute; inset: 0;
+                  background: linear-gradient(180deg, rgba(13,10,30,.12) 40%, rgba(13,10,30,.92)); }
+  .cover-name { position: absolute; z-index: 1; left: 15px; right: 15px; bottom: 11px;
+                font-size: 17px; font-weight: bold; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.7); }
+
+  .deckbody { padding: 13px 15px 15px; }
+  .deckbody .cmdr { font-size: 13px; color: var(--ink-mid); margin: 0 0 11px; }
+  .deckfoot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .pips { display: flex; gap: 4px; }
+  .pip { width: 21px; height: 21px; border-radius: 50%; font-size: 11px; font-weight: bold;
+         display: flex; align-items: center; justify-content: center;
+         border: 1px solid rgba(0,0,0,.45); box-shadow: inset 0 -1px 2px rgba(0,0,0,.2); }
+  .pip-W { background:#f6f0dc; color:#2b2410; }
+  .pip-U { background:#9ec6e3; color:#0a1e2e; }
+  .pip-B { background:#514c5b; color:#f1eff5; }
+  .pip-R { background:#e79b7f; color:#290e06; }
+  .pip-G { background:#93bd91; color:#0c200f; }
+  .pip-C { background:#bfbdc7; color:#1a1922; }
+
+  .bracket { font-size: 12px; padding: 4px 11px; border-radius: 999px;
+             background: rgba(58,43,149,.5); border: 1px solid var(--glass-edge); color: var(--ink); }
+  .owned-tag { font-size: 12px; color: var(--ink-mid); margin-left: auto; }
+
+  .newdeck {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    min-height: 232px; background: none; border: 1.5px dashed var(--glass-edge);
+    border-radius: var(--r); color: var(--ink-mid); font: inherit; font-size: 15px; cursor: pointer;
+  }
+  .newdeck:hover { border-color: var(--glass-lit); color: var(--ink); background: var(--glass); }
+  .newdeck svg { width: 30px; height: 30px; fill: none; stroke: var(--icon); stroke-width: 1.6; stroke-linecap: round; }
+
+  /* ---------- NEW DECK ---------- */
+  .twoup { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .twoup { grid-template-columns: 1fr; } }
+
+  .ac { position: relative; }
+  .ac-list {
+    position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30;
+    background: #17123010; background-color: #181334;
+    border: 1px solid var(--glass-edge); border-radius: var(--r-sm);
+    max-height: 268px; overflow-y: auto; box-shadow: 0 20px 44px rgba(0,0,0,.6);
+  }
+  .ac-list[hidden] { display: none; }
+  .ac-item {
+    display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+    width: 100%; padding: 10px 13px; background: none; border: 0; color: inherit;
+    font: inherit; font-size: 14px; text-align: left; cursor: pointer;
+  }
+  .ac-item + .ac-item { border-top: 1px solid rgba(255,255,255,.05); }
+  .ac-item:hover, .ac-item:focus-visible { background: var(--glass-hi); }
+  .ac-item small { display: block; color: var(--ink-low); font-size: 12px; }
+  .ac-qty { font-size: 12.5px; color: #a9f0cd; white-space: nowrap; }
+  .ac-empty { padding: 13px; font-size: 13.5px; color: var(--ink-mid); }
+  .ac-empty button { margin-top: 8px; }
+
+  .switch { display: flex; align-items: center; gap: 9px; font-size: 13.5px; color: var(--ink-mid); margin-top: 12px; }
+  .switch input { width: auto; }
+
+  .picked { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+  .picked .pill { display: inline-flex; align-items: center; gap: 8px; }
+  .picked .pill button { background: none; border: 0; color: var(--ink-mid); font: inherit; cursor: pointer; font-size: 15px; line-height: 1; }
+  .picked .pill button:hover { color: var(--tint-mag); }
+
+  /* ---------- DECK EDITOR ---------- */
+  .editor { display: grid; grid-template-columns: 1fr 344px; gap: 20px; align-items: start; }
+
+  .deckhead { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+  .deckhead h1 { margin: 0; }
+  .badge { font-size: 12.5px; padding: 4px 12px; border-radius: 999px;
+           background: var(--glass-hi); border: 1px solid var(--glass-edge); color: var(--ink-mid); }
+  .badge-ok { background: rgba(60,190,130,.22); border-color: rgba(120,230,180,.4); color: #a9f0cd; }
+
+  .cat { margin-bottom: 22px; }
+  .cat-head { display: flex; align-items: baseline; gap: 10px; padding-bottom: 7px; margin-bottom: 4px;
+              border-bottom: 1px solid var(--glass-edge); }
+  .cat-head h3 { margin: 0; }
+  .cat-head span { font-size: 12.5px; color: var(--ink-low); }
+  .cat-head button { margin-left: auto; }
+
+  .row {
+    display: grid; grid-template-columns: 92px 1fr 84px 112px 34px;
+    gap: 12px; align-items: center;
+    padding: 8px 10px; border-radius: var(--r-sm); font-size: 14.5px;
+  }
+  .row:hover { background: var(--glass); }
+  .row + .row { border-top: 1px solid rgba(255,255,255,.045); }
+
+  .stepper { display: flex; align-items: center; gap: 3px; }
+  .stepper button {
+    width: 26px; height: 26px; border-radius: 6px; cursor: pointer;
+    background: var(--glass-hi); border: 1px solid var(--glass-edge); color: var(--ink);
+    font: inherit; font-size: 15px; line-height: 1;
+  }
+  .stepper button:hover { background: rgba(255,255,255,.14); }
+  .stepper output { min-width: 22px; text-align: center; font-weight: bold; }
+
+  .rowname { font-weight: bold; }
+  .rowtype { font-size: 12.5px; color: var(--ink-low); font-weight: normal; }
+  .mv { color: var(--ink-mid); font-size: 13.5px; }
+
+  /* Ownership is marked by symbol + text, never colour alone */
+  .own { font-size: 12.5px; }
+  .own-yes { color: #a9f0cd; }
+  .own-no  { color: #ffd88a; }
+
+  .del { background: none; border: 0; color: var(--ink-low); font: inherit; font-size: 17px; cursor: pointer; border-radius: 6px; }
+  .del:hover { color: var(--tint-mag); background: var(--glass-hi); }
+
+  .addbar { display: flex; gap: 10px; margin-bottom: 18px; }
+
+  .side { display: flex; flex-direction: column; gap: 16px; }
+  .side .tile { padding: 17px 19px; }
+
+  .curve { display: flex; align-items: flex-end; gap: 5px; height: 74px; margin: 6px 0 24px; }
+  .curve div { flex: 1; border-radius: 3px 3px 0 0; position: relative;
+               background: linear-gradient(180deg, var(--magenta), var(--indigo)); }
+  .curve div span { position: absolute; bottom: -19px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--ink-low); }
+
+  .bar { height: 10px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; margin: 9px 0 6px; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--purple), var(--magenta)); }
+
+  .combo { border-left: 3px solid var(--magenta); padding: 2px 0 2px 12px; margin-bottom: 14px; }
+  .combo p { margin: 0 0 3px; }
+  .combo-line { font-size: 13.5px; font-weight: bold; }
+  .combo-res { font-size: 12.5px; color: var(--tint-pur); }
+  .combo-miss { font-size: 12.5px; color: var(--ink-mid); }
+
+  .stack { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { font-size: 12.5px; padding: 4px 11px; border-radius: 999px;
+          background: var(--glass-hi); border: 1px solid var(--glass-edge); }
+
+  .legality { display: flex; align-items: center; gap: 9px; font-size: 14px; padding: 5px 0; }
+
+  .mockflag { font-size: 13px; color: var(--ink-mid); border: 1px dashed var(--glass-edge);
+              border-radius: var(--r-sm); padding: 11px 15px; margin-bottom: 22px; background: var(--glass); }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 14px; margin-bottom: 24px; }
+  .stat b { display: block; font-size: 24px; line-height: 1.15; }
+  .stat span { font-size: 12.5px; color: var(--ink-mid); }
+
+  .hit { display: grid; grid-template-columns: 88px 1fr 60px; gap: 16px; align-items: start; margin-bottom: 15px; }
+  .score b { font-size: 21px; display: block; color: var(--tint-mag); text-align: right; }
+  .score span { font-size: 10.5px; color: var(--ink-low); display: block; text-align: right; }
+  .why { font-size: 14px; color: var(--ink-mid); margin: 4px 0 8px; }
+  .why strong { color: var(--ink); }
+
+  /* ---------- DECK TOOLBAR ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; margin-bottom: 16px; }
+  .toolbar select { width: auto; padding: 8px 11px; font-size: 13.5px; }
+  .toolbar .filterwrap { flex: 1 1 210px; min-width: 180px; }
+  .toolbar input { padding: 8px 11px; font-size: 13.5px; }
+
+  .seg { display: flex; border: 1px solid var(--glass-edge); border-radius: var(--r-sm); overflow: hidden; }
+  .seg button {
+    background: none; border: 0; color: var(--ink-mid); font: inherit; font-size: 13.5px;
+    padding: 8px 13px; cursor: pointer;
+  }
+  .seg button + button { border-left: 1px solid var(--glass-edge); }
+  .seg button:hover { background: var(--glass-hi); color: var(--ink); }
+  .seg button[aria-pressed="true"] { background: rgba(162,59,132,.45); color: #fff; font-weight: bold; }
+
+  /* Colour tags carry a name in the title and a letter, never hue alone */
+  .tagdot { width: 13px; height: 13px; border-radius: 4px; border: 1px solid rgba(255,255,255,.35);
+            display: inline-block; vertical-align: -2px; margin-right: 7px; }
+  .t-ramp { background: #4a9d6e; } .t-draw { background: #4a7bc9; }
+  .t-win  { background: #c94a7b; } .t-none { background: transparent; border-style: dashed; }
+
+  .printsel { font-size: 12px; padding: 3px 7px; width: auto; border-radius: 5px; }
+  .price { font-size: 13px; color: var(--ink-mid); text-align: right; white-space: nowrap; }
+
+  .minilist { font-size: 13.5px; }
+  .minilist li { margin-bottom: 7px; }
+  .minilist ul { margin: 0; padding-left: 18px; }
+
+  .history { list-style: none; margin: 0; padding: 0; font-size: 13.5px; }
+  .history li { padding: 8px 0 8px 15px; border-left: 2px solid var(--glass-edge); position: relative; }
+  .history li::before { content: ""; position: absolute; left: -5px; top: 14px;
+                        width: 8px; height: 8px; border-radius: 50%; background: var(--icon); }
+  .history time { display: block; font-size: 12px; color: var(--ink-low); }
+
+  .menu { position: relative; display: inline-block; }
+  .menu-list { position: absolute; right: 0; top: calc(100% + 6px); z-index: 25; min-width: 190px;
+               background-color: #181334; border: 1px solid var(--glass-edge); border-radius: var(--r-sm);
+               box-shadow: 0 18px 40px rgba(0,0,0,.6); padding: 5px; }
+  .menu-list[hidden] { display: none; }
+  .menu-list button { display: block; width: 100%; text-align: left; background: none; border: 0;
+                      color: inherit; font: inherit; font-size: 13.5px; padding: 8px 11px;
+                      border-radius: 6px; cursor: pointer; }
+  .menu-list button:hover { background: var(--glass-hi); }
+
+  /* ---------- SHELF ---------- */
+  .shelfgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 17px; }
+  .shelfcard { position: relative; }
+  .shelfcard textarea { font-size: 12.5px; margin-top: 8px; padding: 8px 10px; }
+
+  .pkg { display: flex; align-items: center; gap: 13px; padding: 12px 0; border-top: 1px solid var(--glass-edge); }
+  .pkg:first-of-type { border-top: 0; }
+  .pkg div { flex: 1; }
+  .pkg strong { display: block; font-size: 14.5px; }
+  .pkg small { color: var(--ink-low); font-size: 12.5px; }
+
+  /* ---------- JOURNAL ---------- */
+  .journal { margin-top: 20px; }
+  .entrybox { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 20px; }
+  .entrybox textarea { flex: 1; }
+
+  .entries { list-style: none; margin: 0; padding: 0; }
+  .entry { padding: 14px 0 14px 20px; border-left: 2px solid var(--glass-edge); position: relative; }
+  .entry::before { content: ""; position: absolute; left: -6px; top: 20px; width: 10px; height: 10px;
+                   border-radius: 50%; background: var(--icon); border: 2px solid var(--bg); }
+  .entry-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 5px; }
+  .entry-meta time { font-size: 12.5px; color: var(--ink-low); }
+  .entry p { margin: 0; font-size: 14.5px; }
+  .result { font-size: 11.5px; font-weight: bold; padding: 2px 9px; border-radius: 999px;
+            border: 1px solid var(--glass-edge); }
+  .r-win  { background: rgba(60,190,130,.24); color: #a9f0cd; }
+  .r-loss { background: rgba(190,90,90,.24);  color: #ffb8b8; }
+  .r-note { background: var(--glass-hi); color: var(--ink-mid); }
+
+  .overview { border-left: 4px solid var(--magenta); }
+  .overview h4 { font-size: 14px; margin: 18px 0 5px; color: var(--tint-mag); }
+  .overview h4:first-of-type { margin-top: 0; }
+  .overview p { margin: 0; font-size: 14.5px; }
+  .modelrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .modelrow select { width: auto; padding: 8px 11px; font-size: 13.5px; }
+
+  /* ---------- BRACKET METER ---------- */
+  .meter { display: flex; gap: 4px; margin: 10px 0 6px; }
+  .meter div { flex: 1; height: 9px; border-radius: 3px; background: rgba(255,255,255,.08); }
+  .meter div.on { background: linear-gradient(90deg, var(--purple), var(--magenta)); }
+  .meter-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-low); }
+
+  /* ---------- LOCATIONS ---------- */
+  .loc { font-size: 12px; padding: 3px 9px; border-radius: 999px;
+         background: var(--glass-hi); border: 1px solid var(--glass-edge); color: var(--ink-mid); }
+  .loc-out { border-style: dashed; color: #ffd88a; }
+
+  /* ---------- SAVED SEARCHES ---------- */
+  .saved { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+  .saved button { background: var(--glass); border: 1px solid var(--glass-edge); color: var(--ink);
+                  font: inherit; font-size: 13px; padding: 6px 13px; border-radius: var(--r-sm); cursor: pointer; }
+  .saved button:hover { background: var(--glass-hi); border-color: var(--glass-lit); }
+
+  @media (max-width: 1080px) { .editor { grid-template-columns: 1fr; } }
+  @media (max-width: 880px) {
+    .shell { grid-template-columns: 1fr; }
+    .rail { border-right: 0; border-bottom: 1px solid var(--glass-edge); }
+    [role="tablist"] { flex-direction: row; flex-wrap: wrap; }
+    .tab { width: auto; }
+    main { padding: 20px 16px 50px; }
+    .row { grid-template-columns: 84px 1fr 34px; }
+    .row .mv, .row .own { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to main content</a>
+
+<svg class="filaments" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 1400 900">
+  <g fill="none" stroke="var(--thread)" stroke-width="1">
+    <path d="M-20 210 C 240 130, 380 300, 620 250 S 1080 300, 1420 190"/>
+    <path d="M-20 420 C 260 380, 420 520, 700 470 S 1120 500, 1420 430"/>
+    <path d="M-20 660 C 300 610, 460 760, 760 700 S 1140 740, 1420 640"/>
+  </g>
+  <g fill="none" stroke="var(--thread-dim)" stroke-width="1">
+    <path d="M180 -20 C 220 220, 130 420, 260 660 S 210 860, 240 920"/>
+    <path d="M700 -20 C 660 200, 780 430, 690 640 S 740 830, 710 920"/>
+    <path d="M1180 -20 C 1140 240, 1240 400, 1150 620 S 1200 820, 1170 920"/>
+    <path d="M260 250 C 420 300, 560 220, 700 250"/>
+    <path d="M690 470 C 860 430, 1010 520, 1150 470"/>
+  </g>
+  <g fill="var(--tint-mag)" opacity=".5">
+    <circle cx="260" cy="250" r="3"/><circle cx="700" cy="250" r="3"/>
+    <circle cx="700" cy="470" r="3"/><circle cx="1150" cy="470" r="3"/>
+    <circle cx="240" cy="660" r="3"/><circle cx="760" cy="700" r="3"/>
+  </g>
+</svg>
+
+<div class="shell">
+
+  <nav class="rail" aria-label="Grimoire sections">
+    <div class="brandrow">
+      <svg class="nucleus" viewBox="0 0 40 40" aria-hidden="true">
+        <g stroke="var(--tint-mag)" stroke-width="1.4" stroke-linecap="round" opacity=".85">
+          <path d="M20 4 v-3"/><path d="M31 8.5 l2.2-2.2"/><path d="M36 20 h3"/>
+          <path d="M31.5 31.5 l2.2 2.2"/><path d="M20 36 v3"/><path d="M8.5 31.5 l-2.2 2.2"/>
+          <path d="M4 20 h-3"/><path d="M8.5 8.5 l-2.2-2.2"/>
+        </g>
+        <circle cx="20" cy="20" r="15" fill="rgba(162,59,132,.28)" stroke="var(--magenta)" stroke-width="1.6"/>
+        <circle cx="20" cy="20" r="6.5" fill="var(--tint-mag)"/>
+      </svg>
+      <div>
+        <p class="wordmark">Grimoire</p>
+      </div>
+    </div>
+    <p class="wordmark-sub">Atrium module &middot; your cards, your shelf</p>
+
+    <div role="tablist" aria-label="Grimoire sections">
+      <button class="tab" role="tab" id="tab-decks" aria-controls="p-decks" aria-selected="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="3" y="7" width="13.5" height="14" rx="2.2"/>
+          <path d="M8.2 4H18a2.2 2.2 0 0 1 2.2 2.2V17"/>
+        </svg>
+        Decks<span class="count">6</span>
+      </button>
+
+      <button class="tab" role="tab" id="tab-collection" aria-controls="p-collection" aria-selected="false" tabindex="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="3" y="3" width="7.4" height="8.4" rx="1.6"/>
+          <rect x="13.6" y="3" width="7.4" height="8.4" rx="1.6"/>
+          <rect x="3" y="12.6" width="7.4" height="8.4" rx="1.6"/>
+          <rect x="13.6" y="12.6" width="7.4" height="8.4" rx="1.6"/>
+        </svg>
+        Collection<span class="count">1,847</span>
+      </button>
+
+      <button class="tab" role="tab" id="tab-synergy" aria-controls="p-synergy" aria-selected="false" tabindex="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="6" cy="6.2" r="2.6"/>
+          <circle cx="18" cy="9.4" r="2.6"/>
+          <circle cx="9.2" cy="18.4" r="2.6"/>
+          <path d="M8.5 6.9 15.5 8.7"/>
+          <path d="M6.6 8.7 8.6 15.9"/>
+          <path d="M16.4 11.6 11.2 16.6"/>
+        </svg>
+        Find synergies
+      </button>
+
+      <button class="tab" role="tab" id="tab-shelf" aria-controls="p-shelf" aria-selected="false" tabindex="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 3.4 14.7 9l6.1.9-4.4 4.3 1 6.1L12 17.4 6.6 20.3l1-6.1L3.2 9.9 9.3 9z"/>
+        </svg>
+        Shelf<span class="count">7</span>
+      </button>
+
+      <button class="tab" role="tab" id="tab-sync" aria-controls="p-sync" aria-selected="false" tabindex="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 3v11.2"/>
+          <path d="M8 10.6 12 14.7 16 10.6"/>
+          <path d="M4 16.4v2.4A2.2 2.2 0 0 0 6.2 21h11.6a2.2 2.2 0 0 0 2.2-2.2v-2.4"/>
+        </svg>
+        Import &amp; sync
+      </button>
+    </div>
+
+    <p class="railfoot"><span class="live"></span>Running locally. Scryfall bulk data cached 3 days ago. Vault connected.</p>
+  </nav>
+
+  <main id="main">
+
+    <!-- ================= DECK EDITOR ================= -->
+    <section role="tabpanel" id="p-decks" aria-labelledby="tab-decks" tabindex="0">
+
+      <!-- ---- library ---- -->
+      <div id="view-library">
+        <h1>Decks</h1>
+        <p class="lede">Pick a deck to open it. Covers use the commander's art crop from your local image cache.</p>
+        <div class="library" id="library"></div>
+      </div>
+
+      <!-- ---- new deck ---- -->
+      <div id="view-new" hidden>
+        <button class="btn btn-quiet" style="margin-bottom:16px" data-goto="library">&larr; Back to decks</button>
+        <h1>New deck</h1>
+        <p class="lede">Two ways in. Both end in the same editor.</p>
+
+        <div class="twoup">
+
+          <div class="tile">
+            <h3>Paste or import a list</h3>
+            <p class="note" style="margin-bottom:12px">
+              A CSV, or plain text one card per line with an optional leading quantity. Formats from Archidekt, Moxfield and Scryfall all parse.
+            </p>
+            <label class="skip" for="bulk">Paste a decklist</label>
+            <textarea id="bulk" rows="8">1 Marwyn, the Nurturer
+1 Llanowar Elves
+1 Elvish Archdruid
+1 Priest of Titania
+1 Craterhoof Behemoth</textarea>
+            <div style="display:flex; gap:10px; margin-top:12px">
+              <button class="btn">Parse list</button>
+              <button class="btn btn-quiet">Choose a CSV file</button>
+            </div>
+            <p class="note" style="margin-top:12px">
+              On parse you get a review screen: names resolved against Scryfall, and each card marked owned or wishlist before anything is saved.
+            </p>
+          </div>
+
+          <div class="tile">
+            <h3>Build card by card</h3>
+            <p class="note" style="margin-bottom:12px">
+              Search runs against your collection only, so you can't accidentally build a deck you can't sleeve. Try typing <code>elv</code>.
+            </p>
+
+            <div class="ac">
+              <label class="skip" for="ac-input">Search your collection to add a card</label>
+              <input type="search" id="ac-input" role="combobox" aria-expanded="false"
+                     aria-controls="ac-list" aria-autocomplete="list" autocomplete="off"
+                     placeholder="Type a card name…">
+              <div class="ac-list" id="ac-list" role="listbox" aria-label="Matching cards" hidden></div>
+            </div>
+
+            <div class="switch">
+              <input type="checkbox" id="allcards">
+              <label for="allcards">Also search cards I don't own, and add them as wishlist</label>
+            </div>
+
+            <div class="picked" id="picked"></div>
+            <p class="note" id="picked-count" style="margin-top:14px">Nothing added yet.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ---- editor ---- -->
+      <div id="view-editor" hidden>
+      <button class="btn btn-quiet" style="margin-bottom:16px" data-goto="library">&larr; Back to decks</button>
+
+      <div class="deckhead">
+        <h1>Elfball</h1>
+        <span class="badge">Marwyn, the Nurturer</span>
+        <span class="badge">Mono-green</span>
+        <span class="badge badge-ok">Commander legal</span>
+      </div>
+      <p class="lede">Edited here, saved locally, mirrored to your vault. Every change updates the counts on the right as you make it.</p>
+
+      <div class="mockflag">
+        Interface mockup. Card art is a placeholder frame, the data is invented, and the steppers below change numbers on screen only — nothing is wired to a backend.
+      </div>
+
+      <div class="editor">
+
+        <!-- ---- deck list ---- -->
+        <div class="tile">
+
+          <div class="toolbar">
+            <div class="seg" role="group" aria-label="How to display the deck">
+              <button type="button" aria-pressed="true">Stacks</button>
+              <button type="button" aria-pressed="false">Text</button>
+              <button type="button" aria-pressed="false">Grid</button>
+              <button type="button" aria-pressed="false">Table</button>
+            </div>
+
+            <label class="skip" for="groupby">Group cards by</label>
+            <select id="groupby">
+              <option>Group: my categories</option>
+              <option>Group: card type</option>
+              <option>Group: mana value</option>
+              <option>Group: colour</option>
+              <option>Group: colour tag</option>
+              <option>Group: owned or wishlist</option>
+            </select>
+
+            <label class="skip" for="sortby">Sort cards by</label>
+            <select id="sortby">
+              <option>Sort: name</option>
+              <option>Sort: mana value</option>
+              <option>Sort: price</option>
+              <option>Sort: type</option>
+              <option>Sort: date added</option>
+            </select>
+
+            <div class="filterwrap">
+              <label class="skip" for="deckfilter">Filter this deck</label>
+              <input type="search" id="deckfilter" placeholder="Filter this deck — o:target, t:land, tag:ramp">
+            </div>
+
+            <div class="menu">
+              <button class="btn btn-quiet" id="exportbtn" aria-expanded="false" aria-haspopup="true">Export</button>
+              <div class="menu-list" id="exportmenu" hidden>
+                <button type="button">Plain text</button>
+                <button type="button">MTG Arena</button>
+                <button type="button">MTGO .dek</button>
+                <button type="button">CSV</button>
+                <button type="button">Markdown to vault</button>
+                <button type="button">Proxy print sheet (PDF)</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="addbar">
+            <label class="skip" for="add">Add a card to this deck</label>
+            <input type="search" id="add" placeholder="Add a card — type a name, or paste a decklist to bulk add">
+            <button class="btn">Add</button>
+          </div>
+          <p class="note" style="margin:-6px 0 20px">
+            Cards you own are added straight in. Cards you don't are added as <strong>wishlist</strong> and counted separately, so the deck stays honest about what you can actually sleeve tonight.
+          </p>
+
+          <div class="cat">
+            <div class="cat-head">
+              <h3>Commander</h3><span>1 card</span>
+            </div>
+            <div class="row">
+              <div class="stepper" role="group" aria-label="Copies of Marwyn, the Nurturer">
+                <button type="button" aria-label="Remove a copy">&minus;</button>
+                <output>1</output>
+                <button type="button" aria-label="Add a copy">+</button>
+              </div>
+              <div>
+                <span class="tagdot t-win" aria-hidden="true"></span><span class="rowname">Marwyn, the Nurturer</span><br>
+                <span class="rowtype">Legendary Creature — Elf Druid &middot; Win condition</span><br>
+                <select class="printsel" aria-label="Which printing of Marwyn, the Nurturer goes in this deck"><option>Dominaria</option><option>Commander Masters</option></select>
+              </div>
+              <div class="mv">3 mana<br><span class="price">$2.50</span></div>
+              <div class="own own-yes">&#10003; Owned &times;1</div>
+              <button class="del" aria-label="Remove Marwyn, the Nurturer from deck">&times;</button>
+            </div>
+          </div>
+
+          <div class="cat">
+            <div class="cat-head">
+              <h3>Mana creatures</h3><span>14 cards &middot; average 1.4 mana</span>
+              <button class="btn btn-quiet" style="padding:5px 12px;font-size:13px">Rename group</button>
+            </div>
+
+            <div class="row">
+              <div class="stepper" role="group" aria-label="Copies of Llanowar Elves">
+                <button type="button" aria-label="Remove a copy">&minus;</button><output>1</output><button type="button" aria-label="Add a copy">+</button>
+              </div>
+              <div>
+                <span class="tagdot t-ramp" aria-hidden="true"></span><span class="rowname">Llanowar Elves</span><br>
+                <span class="rowtype">Creature — Elf Druid &middot; Ramp</span><br>
+                <select class="printsel" aria-label="Which printing of Llanowar Elves goes in this deck"><option>Dominaria</option><option>Magic 2015</option><option>Core Set 2019 (foil)</option></select>
+              </div>
+              <div class="mv">1 mana<br><span class="price">$0.35</span></div>
+              <div class="own own-yes">&#10003; Owned &times;4</div>
+              <button class="del" aria-label="Remove Llanowar Elves from deck">&times;</button>
+            </div>
+
+            <div class="row">
+              <div class="stepper" role="group" aria-label="Copies of Elvish Archdruid">
+                <button type="button" aria-label="Remove a copy">&minus;</button><output>1</output><button type="button" aria-label="Add a copy">+</button>
+              </div>
+              <div>
+                <span class="tagdot t-ramp" aria-hidden="true"></span><span class="rowname">Elvish Archdruid</span><br>
+                <span class="rowtype">Creature — Elf Druid &middot; Ramp</span><br>
+                <select class="printsel" aria-label="Which printing of Elvish Archdruid goes in this deck"><option>Magic 2013</option><option>Commander 2018</option></select>
+              </div>
+              <div class="mv">3 mana<br><span class="price">$1.80</span></div>
+              <div class="own own-yes">&#10003; Owned &times;1</div>
+              <button class="del" aria-label="Remove Elvish Archdruid from deck">&times;</button>
+            </div>
+
+            <div class="row">
+              <div class="stepper" role="group" aria-label="Copies of Priest of Titania">
+                <button type="button" aria-label="Remove a copy">&minus;</button><output>1</output><button type="button" aria-label="Add a copy">+</button>
+              </div>
+              <div>
+                <span class="tagdot t-ramp" aria-hidden="true"></span><span class="rowname">Priest of Titania</span><br>
+                <span class="rowtype">Creature — Elf Druid &middot; Ramp</span><br>
+                <select class="printsel" aria-label="Which printing of Priest of Titania goes in this deck"><option>Commander Masters</option><option>Urza's Legacy</option></select>
+              </div>
+              <div class="mv">2 mana<br><span class="price">$2.10</span></div>
+              <div class="own own-no">&#9679; Wishlist &mdash; not owned</div>
+              <button class="del" aria-label="Remove Priest of Titania from deck">&times;</button>
+            </div>
+
+            <div class="row">
+              <div class="stepper" role="group" aria-label="Copies of Devoted Druid">
+                <button type="button" aria-label="Remove a copy">&minus;</button><output>1</output><button type="button" aria-label="Add a copy">+</button>
+              </div>
+              <div>
+                <span class="tagdot t-ramp" aria-hidden="true"></span><span class="rowname">Devoted Druid</span><br>
+                <span class="rowtype">Creature — Elf Druid &middot; Ramp</span><br>
+                <select class="printsel" aria-label="Which printing of Devoted Druid goes in this deck"><option>Shadowmoor</option><option>Iconic Masters</option></select>
+              </div>
+              <div class="mv">2 mana<br><span class="price">$3.40</span></div>
+              <div class="own own-yes">&#10003; Owned &times;1</div>
+              <button class="del" aria-label="Remove Devoted Druid from deck">&times;</button>
+            </div>
+          </div>
+
+          <div class="cat">
+            <div class="cat-head">
+              <h3>Payoffs</h3><span>9 cards &middot; average 4.8 mana</span>
+              <button class="btn btn-quiet" style="padding:5px 12px;font-size:13px">Rename group</button>
+            </div>
+
+            <div class="row">
+              <div class="stepper" role="group" aria-label="Copies of Craterhoof Behemoth">
+                <button type="button" aria-label="Remove a copy">&minus;</button><output>1</output><button type="button" aria-label="Add a copy">+</button>
+              </div>
+              <div>
+                <span class="tagdot t-win" aria-hidden="true"></span><span class="rowname">Craterhoof Behemoth</span><br>
+                <span class="rowtype">Creature — Beast &middot; Win condition</span><br>
+                <select class="printsel" aria-label="Which printing of Craterhoof Behemoth goes in this deck"><option>Modern Horizons 2</option><option>Avacyn Restored</option></select>
+              </div>
+              <div class="mv">8 mana<br><span class="price">$28.00</span></div>
+              <div class="own own-yes">&#10003; Owned &times;1</div>
+              <button class="del" aria-label="Remove Craterhoof Behemoth from deck">&times;</button>
+            </div>
+
+            <div class="row">
+              <div class="stepper" role="group" aria-label="Copies of Beast Whisperer">
+                <button type="button" aria-label="Remove a copy">&minus;</button><output>1</output><button type="button" aria-label="Add a copy">+</button>
+              </div>
+              <div>
+                <span class="tagdot t-draw" aria-hidden="true"></span><span class="rowname">Beast Whisperer</span><br>
+                <span class="rowtype">Creature — Elf Druid &middot; Card draw</span><br>
+                <select class="printsel" aria-label="Which printing of Beast Whisperer goes in this deck"><option>Guilds of Ravnica</option><option>Commander Masters</option></select>
+              </div>
+              <div class="mv">4 mana<br><span class="price">$1.20</span></div>
+              <div class="own own-yes">&#10003; Owned &times;2</div>
+              <button class="del" aria-label="Remove Beast Whisperer from deck">&times;</button>
+            </div>
+
+            <div class="row">
+              <div class="stepper" role="group" aria-label="Copies of Sword of the Paruns">
+                <button type="button" aria-label="Remove a copy">&minus;</button><output>1</output><button type="button" aria-label="Add a copy">+</button>
+              </div>
+              <div>
+                <span class="tagdot t-win" aria-hidden="true"></span><span class="rowname">Sword of the Paruns</span><br>
+                <span class="rowtype">Artifact — Equipment &middot; Win condition</span><br>
+                <select class="printsel" aria-label="Which printing of Sword of the Paruns goes in this deck"><option>Ravnica: City of Guilds</option></select>
+              </div>
+              <div class="mv">3 mana<br><span class="price">$2.90</span></div>
+              <div class="own own-yes">&#10003; Owned &times;1</div>
+              <button class="del" aria-label="Remove Sword of the Paruns from deck">&times;</button>
+            </div>
+          </div>
+
+          <p class="note">Groups are yours to define and rename. The app suggests them on import by reading oracle text, then leaves them alone.</p>
+        </div>
+
+        <!-- ---- side panels ---- -->
+        <div class="side">
+
+          <div class="tile">
+            <h3>Buildable right now</h3>
+            <div class="bar"><i style="width:96%"></i></div>
+            <p class="note" style="margin:0">96 of 100 cards owned. 4 on the wishlist.</p>
+            <div class="stack" style="margin-top:12px">
+              <span class="pill">Priest of Titania</span>
+              <span class="pill">Wirewood Symbiote</span>
+              <span class="pill">Quirion Ranger</span>
+              <span class="pill">Concordant Crossroads</span>
+            </div>
+          </div>
+
+          <div class="tile">
+            <h3>Mana curve</h3>
+            <div class="curve" role="img" aria-label="Mana curve: 12 cards at one mana, 19 at two, 21 at three, 14 at four, 8 at five, 5 at six or more.">
+              <div style="height:57%"><span>1</span></div>
+              <div style="height:90%"><span>2</span></div>
+              <div style="height:100%"><span>3</span></div>
+              <div style="height:67%"><span>4</span></div>
+              <div style="height:38%"><span>5</span></div>
+              <div style="height:24%"><span>6+</span></div>
+            </div>
+            <p class="note" style="margin:0">Average mana value 2.9 &middot; 37 lands &middot; 63 spells</p>
+          </div>
+
+          <div class="tile">
+            <h3>Rules check</h3>
+            <p class="legality"><span class="own-yes">&#10003;</span> 100 cards exactly</p>
+            <p class="legality"><span class="own-yes">&#10003;</span> Singleton — no duplicates outside basics</p>
+            <p class="legality"><span class="own-yes">&#10003;</span> All cards inside mono-green identity</p>
+            <p class="legality"><span class="own-no">&#9679;</span> 2 cards also live in Tax Season — you own enough copies</p>
+          </div>
+
+          <div class="tile">
+            <h3>Combos in this deck</h3>
+            <div class="combo">
+              <p class="combo-line">Marwyn + Sword of the Paruns + Elvish Archdruid</p>
+              <p class="combo-res">Unbounded green mana</p>
+              <p class="combo-miss">All three already in the deck.</p>
+            </div>
+            <div class="combo">
+              <p class="combo-line">Devoted Druid + Vizier of Remedies</p>
+              <p class="combo-res">Unbounded green mana</p>
+              <p class="combo-miss">One piece short. You don't own Vizier of Remedies.</p>
+            </div>
+            <p class="note" style="margin:0">Checked against Commander Spellbook whenever the list changes.</p>
+          </div>
+
+          <div class="tile">
+            <h3>Value</h3>
+            <p class="note" style="margin:0 0 9px">Prices come from the same Scryfall bulk file as the card data, so they refresh once a day and never hit the network separately.</p>
+            <div class="row" style="grid-template-columns:1fr auto; padding:6px 0"><div>Cards you own</div><div class="price">$412.60</div></div>
+            <div class="row" style="grid-template-columns:1fr auto; padding:6px 0"><div>Wishlist, 4 cards</div><div class="price">$31.40</div></div>
+            <div class="row" style="grid-template-columns:1fr auto; padding:6px 0"><div>Most expensive card</div><div class="price">$28.00</div></div>
+          </div>
+
+          <div class="tile">
+            <h3>Tokens to bring</h3>
+            <p class="note" style="margin:0 0 10px">What this deck can make, so your deck box is packed before you leave.</p>
+            <div class="minilist">
+              <ul>
+                <li>1/1 green Elf Warrior &mdash; 3 cards make these</li>
+                <li>1/1 green Insect &mdash; 1 card</li>
+                <li>Copy of target creature &mdash; 1 card</li>
+              </ul>
+            </div>
+            <p class="note" style="margin:10px 0 0">You own printed tokens for two of these three.</p>
+          </div>
+
+          <div class="tile">
+            <h3>History</h3>
+            <ol class="history">
+              <li><time>6 Sep 2026</time>Cut Cultivate, added Beast Whisperer</li>
+              <li><time>22 Aug 2026</time>Added Craterhoof Behemoth</li>
+              <li><time>19 Aug 2026</time>Swapped 3 basics for utility lands</li>
+              <li><time>12 Aug 2026</time>Deck created from import</li>
+            </ol>
+            <button class="btn btn-quiet" style="width:100%; margin-top:12px">Restore an earlier version</button>
+          </div>
+
+          <div class="tile">
+            <h3>Bracket check</h3>
+            <p class="note" style="margin:0 0 4px">You've labelled this <strong>Bracket 3</strong>. Read from the list itself:</p>
+            <div class="meter" role="img" aria-label="Assessed bracket 3 of 5">
+              <div class="on"></div><div class="on"></div><div class="on"></div><div></div><div></div>
+            </div>
+            <div class="meter-labels"><span>1 Exhibition</span><span>5 cEDH</span></div>
+            <p class="note" style="margin:12px 0 0">
+              2 tutors &middot; 1 piece of fast mana &middot; 2 two-card combos &middot; 1 Game Changer.
+              The label matches the list. Cutting the combos would drop it to 2.
+            </p>
+          </div>
+
+          <div class="tile">
+            <h3>Record</h3>
+            <div class="row" style="grid-template-columns:1fr auto; padding:6px 0"><div>Games logged</div><div>14</div></div>
+            <div class="row" style="grid-template-columns:1fr auto; padding:6px 0"><div>Wins</div><div>6</div></div>
+            <div class="row" style="grid-template-columns:1fr auto; padding:6px 0"><div>Most common finish</div><div>Craterhoof</div></div>
+            <p class="note" style="margin:12px 0 0">Pulled from the journal below — every entry you tag with a result counts here.</p>
+          </div>
+
+          <div class="tile">
+            <h3>Deck notes</h3>
+            <label class="skip" for="notes">Deck notes</label>
+            <textarea id="notes" rows="4">Cut Cultivate for Beast Whisperer — the deck makes mana off bodies, not lands. Watch the four-mana slot, it's getting crowded.</textarea>
+            <p class="note" style="margin:10px 0 12px">Writes to <code>Vault/MTG/Elfball.md</code>. Your prose below the frontmatter is never overwritten.</p>
+            <button class="btn btn-quiet" style="width:100%">Save and sync to vault</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ---- journal ---- -->
+      <div class="journal">
+        <div class="twoup">
+
+          <div class="tile">
+            <h2 style="margin-top:0">Journal</h2>
+            <p class="note" style="margin-bottom:16px">
+              Jot something after a game, or whenever the deck does something worth remembering. Each entry is stamped automatically and appended to the deck's vault file.
+            </p>
+
+            <div class="entrybox">
+              <label class="skip" for="newentry">New journal entry</label>
+              <textarea id="newentry" rows="3" placeholder="What happened? What did it feel like to play?"></textarea>
+              <div style="display:flex; flex-direction:column; gap:7px">
+                <button class="btn">Add entry</button>
+                <label class="skip" for="entryresult">Result</label>
+                <select id="entryresult" style="font-size:13px; padding:8px 10px">
+                  <option>No result</option><option>Win</option><option>Loss</option>
+                </select>
+              </div>
+            </div>
+
+            <ol class="entries">
+              <li class="entry">
+                <div class="entry-meta"><time datetime="2026-09-06T21:40">6 Sep 2026, 9:40pm</time><span class="result r-win">Win</span></div>
+                <p>Marwyn got huge because nobody wanted to spend removal on a three-drop. Sword of the Paruns untapped her twice and that was the game. Table did not see it coming.</p>
+              </li>
+              <li class="entry">
+                <div class="entry-meta"><time datetime="2026-08-30T20:05">30 Aug 2026, 8:05pm</time><span class="result r-loss">Loss</span></div>
+                <p>Board wipe on turn five and I had nothing left. Every card in this deck is a creature, which is the whole problem. Should probably find room for one or two ways to rebuild.</p>
+              </li>
+              <li class="entry">
+                <div class="entry-meta"><time datetime="2026-08-24T19:15">24 Aug 2026, 7:15pm</time><span class="result r-note">Note</span></div>
+                <p>Fun even when losing. It does its thing by turn four and there's always a decision about whether to go for it or hold back one more turn. Good deck for teaching someone the format.</p>
+              </li>
+              <li class="entry">
+                <div class="entry-meta"><time datetime="2026-08-22T22:30">22 Aug 2026, 10:30pm</time><span class="result r-win">Win</span></div>
+                <p>Craterhoof again. That's four of six wins ending the same way. Might be a bit one-note — worth testing Genesis Wave as a second angle.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="tile overview">
+            <h2 style="margin-top:0">Deck overview</h2>
+            <p class="note" style="margin-bottom:14px">Written from your journal entries, not from the card list. It only knows what you told it.</p>
+
+            <div class="modelrow">
+              <label class="skip" for="model">Model</label>
+              <select id="model">
+                <option>Local — Qwen2.5 via Ollama</option>
+                <option>Cloud — Claude (your key)</option>
+                <option>Cloud — OpenAI (your key)</option>
+              </select>
+              <button class="btn">Regenerate</button>
+            </div>
+            <p class="note" style="margin:-6px 0 18px">
+              Local keeps entries on the machine. Either cloud option sends the journal text to that provider.
+            </p>
+
+            <h4>How it feels to play</h4>
+            <p>You describe this one as fun even when it loses, which you haven't said about any other deck. It gets going by turn four and gives you a real decision most turns — commit now or wait one more.</p>
+
+            <h4>When to bring it</h4>
+            <p>You've called it a good teaching deck for the format. It reads as a table-friendly pick rather than a closer: strong enough to win, slow enough that nobody feels cheated.</p>
+
+            <h4>Tricks and lines</h4>
+            <p>The line you keep coming back to is Sword of the Paruns untapping Marwyn, which won you a game outright because a three-mana commander doesn't draw removal. Craterhoof is the finish in four of your six wins.</p>
+
+            <h4>What you keep running into</h4>
+            <p>Board wipes end you. You've noted twice that everything in the deck is a creature and there's no way to rebuild. You also flagged the Craterhoof finish as possibly one-note and wanted to test Genesis Wave as a second angle.</p>
+
+            <p class="note" style="margin-top:18px">Generated 9 Sep 2026 from 14 entries. Saved into the vault file under its own heading, below your prose.</p>
+          </div>
+
+        </div>
+      </div>
+
+      </div>
+    </section>
+
+    <!-- ================= COLLECTION ================= -->
+    <section role="tabpanel" id="p-collection" aria-labelledby="tab-collection" tabindex="0" hidden>
+      <h1>Collection</h1>
+      <p class="lede">Everything you physically own, searchable with the query syntax you already use on Scryfall.</p>
+
+      <div class="stats">
+        <div class="tile stat"><b>1,847</b><span>cards owned</span></div>
+        <div class="tile stat"><b>1,204</b><span>unique names</span></div>
+        <div class="tile stat"><b>$3,140</b><span>collection value</span></div>
+        <div class="tile stat"><b>412</b><span>not in any deck</span></div>
+      </div>
+
+      <h2>Saved searches</h2>
+      <div class="saved">
+        <button type="button">Green under $2, not in a deck</button>
+        <button type="button">Foils I could trade</button>
+        <button type="button">Added since last draft</button>
+        <button type="button">Everything in the bulk box</button>
+        <button type="button">+ Save current search</button>
+      </div>
+
+      <div class="tile">
+        <div class="addbar">
+          <label class="skip" for="q">Search your collection</label>
+          <input type="search" id="q" value="t:creature c:g cmc<=3 -is:deck">
+          <button class="btn">Search</button>
+        </div>
+        <p class="note" style="margin:-4px 0 0">
+          <code>t:</code> type &middot; <code>o:</code> oracle text &middot; <code>c:</code> colour &middot; <code>cmc</code> &middot; <code>r:</code> rarity.
+          Two that are yours alone: <code>-is:deck</code> for cards sitting unused, and <code>is:foil</code>.
+        </p>
+
+        <div class="chips">
+          <button class="chip" aria-pressed="true">Green</button>
+          <button class="chip" aria-pressed="true">Creature</button>
+          <button class="chip" aria-pressed="true">3 mana or less</button>
+          <button class="chip" aria-pressed="false">Not in a deck</button>
+          <button class="chip" aria-pressed="false">Foil only</button>
+          <button class="chip" aria-pressed="false">In the bulk box</button>
+          <button class="chip" aria-pressed="false">Lent out</button>
+        </div>
+
+        <h3>Where these live</h3>
+        <p class="note" style="margin-bottom:14px">
+          Every copy has a location you define. This is the question you'll ask most often and neither Archidekt nor Scryfall answers it.
+        </p>
+        <div class="saved" style="margin-bottom:22px">
+          <span class="loc">Elfball box &middot; 96</span>
+          <span class="loc">Binder A &middot; 340</span>
+          <span class="loc">Bulk box &middot; 1,204</span>
+          <span class="loc">Trade folder &middot; 88</span>
+          <span class="loc loc-out">Lent to Dan &middot; 3</span>
+        </div>
+
+        <h2>34 cards match</h2>
+        <div class="grid" id="grid"></div>
+      </div>
+    </section>
+
+    <!-- ================= SYNERGY ================= -->
+    <section role="tabpanel" id="p-synergy" aria-labelledby="tab-synergy" tabindex="0" hidden>
+      <h1>Find synergies</h1>
+      <p class="lede">Say what you want the deck to do. This reads only the cards you own and explains why each one surfaced.</p>
+
+      <div class="tile" style="margin-bottom:22px">
+        <label class="skip" for="goal">What are you trying to do?</label>
+        <textarea id="goal" rows="2">Mono-green, win by making a lot of elves then dumping a huge amount of mana into one finisher.</textarea>
+        <p class="note" style="margin:11px 0 14px">Limited to: cards you own &middot; mono-green &middot; Commander legal &middot; not already in Elfball</p>
+        <button class="btn">Search my cards</button>
+        <button class="btn btn-quiet">Include cards I don't own</button>
+      </div>
+
+      <div class="tile">
+        <h2>From your collection</h2>
+
+        <div class="hit">
+          <div class="cardface c-G" aria-hidden="true">
+            <div class="cf-name">Wirewood Symbiote</div><div class="cf-art">art</div><div class="cf-type">Creature — Insect</div>
+          </div>
+          <div>
+            <h3>Wirewood Symbiote</h3>
+            <p class="why"><strong>Why:</strong> Untaps an elf every turn for free, which turns your mana creatures into repeatable mana rather than one shot each. You own 14 elves already, so the enabler cost is nearly zero.</p>
+            <div class="stack"><span class="pill">Untapper</span><span class="pill">You own 1</span><span class="pill">Unused</span></div>
+          </div>
+          <div class="score"><b>93</b><span>match</span></div>
+        </div>
+
+        <div class="hit">
+          <div class="cardface c-G" aria-hidden="true">
+            <div class="cf-name">Genesis Wave</div><div class="cf-art">art</div><div class="cf-type">Sorcery</div>
+          </div>
+          <div>
+            <h3>Genesis Wave</h3>
+            <p class="why"><strong>Why:</strong> A second finisher of the shape you described — a single enormous mana dump. It's a different failure mode from Craterhoof: it works when the board is empty, where Craterhoof does not.</p>
+            <div class="stack"><span class="pill">Mana sink</span><span class="pill">You own 1</span><span class="pill">Unused</span></div>
+          </div>
+          <div class="score"><b>88</b><span>match</span></div>
+        </div>
+
+        <div class="hit">
+          <div class="cardface c-G" aria-hidden="true">
+            <div class="cf-name">Cultivate</div><div class="cf-art">art</div><div class="cf-type">Sorcery</div>
+          </div>
+          <div>
+            <h3>Cultivate</h3>
+            <p class="why"><strong>Why:</strong> Weak fit, shown for contrast. It ramps, but your plan makes mana off bodies, not lands. It surfaced because of a gap at three mana, not because it matches the theme.</p>
+            <div class="stack"><span class="pill">Ramp</span><span class="pill">You own 3</span></div>
+          </div>
+          <div class="score"><b>54</b><span>match</span></div>
+        </div>
+
+        <p class="note">Reasoning comes from a local model reading oracle text. Treat it as a prompt for your own judgement, not a ruling.</p>
+      </div>
+    </section>
+
+    <!-- ================= SHELF ================= -->
+    <section role="tabpanel" id="p-shelf" aria-labelledby="tab-shelf" tabindex="0" hidden>
+      <h1>Shelf</h1>
+      <p class="lede">A staging area between thinking and building. Park cards here with a note, then send the batch to a deck once you've decided.</p>
+
+      <div class="tile" style="margin-bottom:20px">
+        <div class="toolbar" style="margin-bottom:18px">
+          <button class="btn">Add all to a deck</button>
+          <button class="btn btn-quiet">Start a new deck from these</button>
+          <button class="btn btn-quiet">Save as a package</button>
+          <button class="btn btn-quiet">Clear shelf</button>
+        </div>
+
+        <div class="shelfgrid" id="shelfgrid"></div>
+        <p class="note" style="margin-top:18px">
+          Anything you keep from <strong>Find synergies</strong> lands here rather than going straight into a deck, so a search result never quietly changes a list you've already built.
+        </p>
+      </div>
+
+      <div class="tile">
+        <h3>Packages</h3>
+        <p class="note" style="margin-bottom:14px">Card groups you reuse across builds. Drop one into a new deck instead of retyping it every time.</p>
+
+        <div class="pkg">
+          <div><strong>Green ramp suite</strong><small>9 cards &middot; all owned &middot; used in 3 decks</small></div>
+          <button class="btn btn-quiet">Add to deck</button>
+        </div>
+        <div class="pkg">
+          <div><strong>Mono-green landbase</strong><small>36 cards &middot; 34 owned &middot; used in 2 decks</small></div>
+          <button class="btn btn-quiet">Add to deck</button>
+        </div>
+        <div class="pkg">
+          <div><strong>Cheap interaction</strong><small>7 cards &middot; 5 owned &middot; used in 4 decks</small></div>
+          <button class="btn btn-quiet">Add to deck</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= IMPORT & SYNC ================= -->
+    <section role="tabpanel" id="p-sync" aria-labelledby="tab-sync" tabindex="0" hidden>
+      <h1>Import &amp; sync</h1>
+      <p class="lede">Bring the CSV in once, add cards as you get them, and keep deck notes in the vault rather than locked in this app.</p>
+
+      <div class="tile" style="margin-bottom:16px">
+        <h3>First run</h3>
+        <p class="note" style="margin-bottom:14px">
+          What you see the very first time, before any cards exist. One choice, no empty dashboards.
+        </p>
+        <div class="twoup">
+          <button class="btn" style="padding:22px">Import my CSV</button>
+          <button class="btn btn-quiet" style="padding:22px">Start empty and add cards one at a time</button>
+        </div>
+        <p class="note" style="margin-top:14px">
+          Card data downloads in the background either way, so search works before the first card is entered.
+        </p>
+      </div>
+
+      <div class="tile" style="margin-bottom:16px">
+        <h3>Add by camera</h3>
+        <p class="note" style="margin-bottom:14px">
+          Point the iPad at a pile and it reads card names off the art. Faster than typing a hundred names after a draft. Every scan lands in a review queue before it touches the collection.
+        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn">Open camera</button>
+          <button class="btn btn-quiet">Review queue (0)</button>
+        </div>
+        <p class="note" style="margin-top:12px">Recognition runs on-device. No photo leaves the machine.</p>
+      </div>
+
+      <div class="tile" style="margin-bottom:16px">
+        <h3>Backup</h3>
+        <p class="note" style="margin-bottom:12px">
+          Everything is two things: one SQLite file and your vault folder. Local-first means the failure mode is yours too, so this is deliberate rather than discovered later.
+        </p>
+        <div class="row" style="grid-template-columns:1fr auto; padding:7px 0"><div>Database snapshot</div><div class="own-yes">&#10003; nightly, last night</div></div>
+        <div class="row" style="grid-template-columns:1fr auto; padding:7px 0"><div>Vault folder</div><div class="own-yes">&#10003; under git</div></div>
+        <div class="row" style="grid-template-columns:1fr auto; padding:7px 0"><div>Off-machine copy</div><div class="own-no">&#9679; not configured</div></div>
+        <button class="btn btn-quiet" style="margin-top:12px">Export a full backup now</button>
+      </div>
+
+      <div class="tile" style="margin-bottom:16px">
+        <h3>Column mapping</h3>
+        <p class="note">From <code>collection-export.csv</code> — 1,847 rows read</p>
+        <div class="row" style="grid-template-columns:1fr 1fr 1fr"><div><strong>Name</strong></div><div>Card name</div><div class="own-yes">1,847 resolved</div></div>
+        <div class="row" style="grid-template-columns:1fr 1fr 1fr"><div><strong>Set code</strong></div><div>Set</div><div class="own-yes">Matched</div></div>
+        <div class="row" style="grid-template-columns:1fr 1fr 1fr"><div><strong>Qty</strong></div><div>Quantity owned</div><div class="own-yes">Matched</div></div>
+        <div class="row" style="grid-template-columns:1fr 1fr 1fr"><div><strong>Printing</strong></div><div>Foil</div><div class="own-no">14 rows unclear — review</div></div>
+      </div>
+
+      <div class="tile">
+        <h3>Vault sync</h3>
+        <p class="note" style="margin-bottom:12px">One markdown file per deck in <code>~/Obsidian/Vault/MTG/</code>, with frontmatter Dataview can query.</p>
+        <textarea rows="10" readonly style="font-size:13px;line-height:1.6;color:var(--tint-pur)">---
+deck: Elfball
+commander: Marwyn, the Nurturer
+colors: [G]
+owned: 96
+total: 100
+updated: 2026-09-09
+---
+
+## What this deck is trying to do
+Go wide on elves, convert bodies into mana, dump it into one finisher.</textarea>
+        <p class="note" style="margin-top:12px">Sync runs one way. The app writes frontmatter, you own everything below it.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+const CARDS = [
+  { n:"Llanowar Elves",     t:"Creature — Elf Druid",    mv:1, c:"G", q:4, foil:true,  set:"DOM" },
+  { n:"Elvish Mystic",      t:"Creature — Elf Druid",    mv:1, c:"G", q:2, foil:false, set:"M15" },
+  { n:"Birds of Paradise",  t:"Creature — Bird",         mv:1, c:"G", q:1, foil:false, set:"M12" },
+  { n:"Elvish Archdruid",   t:"Creature — Elf Druid",    mv:3, c:"G", q:1, foil:false, set:"M13" },
+  { n:"Beast Whisperer",    t:"Creature — Elf Druid",    mv:3, c:"G", q:2, foil:false, set:"GRN" },
+  { n:"Devoted Druid",      t:"Creature — Elf Druid",    mv:2, c:"G", q:1, foil:false, set:"SHM" },
+  { n:"Eternal Witness",    t:"Creature — Human Shaman", mv:3, c:"G", q:3, foil:true,  set:"5DN" },
+  { n:"Wall of Roots",      t:"Creature — Plant Wall",   mv:2, c:"G", q:2, foil:false, set:"MMQ" },
+  { n:"Sakura-Tribe Elder", t:"Creature — Snake Shaman", mv:2, c:"G", q:4, foil:false, set:"CHK" },
+  { n:"Scavenging Ooze",    t:"Creature — Ooze",         mv:2, c:"G", q:1, foil:false, set:"M14" },
+  { n:"Fyndhorn Elves",     t:"Creature — Elf Druid",    mv:1, c:"G", q:1, foil:false, set:"ICE" },
+  { n:"Wirewood Symbiote",  t:"Creature — Insect",       mv:1, c:"G", q:1, foil:false, set:"LGN" }
+];
+
+const grid = document.getElementById("grid");
+CARDS.forEach(c => {
+  const b = document.createElement("button");
+  b.className = "cardbtn";
+  b.setAttribute("aria-label", c.n + ", " + c.t + ", " + c.mv + " mana, " + c.q + " owned" + (c.foil ? ", one foil" : "") + ". Open card details.");
+  b.innerHTML =
+    '<div class="cardface c-' + c.c + '">' +
+      '<div class="cf-name">' + c.n + '</div><div class="cf-art">art</div>' +
+      '<div class="cf-type">' + c.t + '</div><span class="qty">' + c.q + '</span>' +
+      (c.foil ? '<span class="foil">FOIL</span>' : '') +
+    '</div>' +
+    '<div class="cardmeta"><strong>' + c.n + '</strong>' + c.set + ' &middot; ' + c.mv + ' mana &middot; ' + c.q + ' owned</div>';
+  grid.appendChild(b);
+});
+
+/* ---------- Deck library ---------- */
+const COLORNAME = { W:"white", U:"blue", B:"black", R:"red", G:"green", C:"colorless" };
+
+const DECKS = [
+  { name:"Elfball",              cmdr:"Marwyn, the Nurturer",        colors:["G"],         bracket:"Bracket 3 · Upgraded",  owned:96,  total:100, art:"c-G" },
+  { name:"Tax Season",           cmdr:"Grand Arbiter Augustin IV",   colors:["W","U"],     bracket:"Bracket 3 · Upgraded",  owned:81,  total:100, art:"c-M" },
+  { name:"Slow Boil",            cmdr:"Muldrotha, the Gravetide",    colors:["U","B","G"], bracket:"Bracket 2 · Core",      owned:100, total:100, art:"c-B" },
+  { name:"Red Light Special",    cmdr:"Krenko, Mob Boss",            colors:["R"],         bracket:"Bracket 2 · Core",      owned:94,  total:100, art:"c-R" },
+  { name:"Winota Line",          cmdr:"Winota, Joiner of Forces",    colors:["R","W"],     bracket:"Bracket 4 · Optimized", owned:72,  total:100, art:"c-M" },
+  { name:"Draft leftovers",      cmdr:"No commander · 60-card",      colors:["U","R"],     bracket:"Casual",                owned:60,  total:60,  art:"c-U" }
+];
+
+const library = document.getElementById("library");
+DECKS.forEach(d => {
+  const colorWords = d.colors.map(c => COLORNAME[c]).join(", ");
+  const pips = d.colors.map(c =>
+    '<span class="pip pip-' + c + '" aria-hidden="true">' + c + '</span>').join("");
+
+  const b = document.createElement("button");
+  b.className = "deckcard";
+  b.setAttribute("aria-label",
+    d.name + ", commander " + d.cmdr + ", colours " + colorWords + ", " + d.bracket +
+    ", " + d.owned + " of " + d.total + " cards owned. Open deck.");
+  b.innerHTML =
+    '<div class="cover ' + d.art + '">' +
+      '<div class="cover-art">commander art crop</div>' +
+      '<span class="cover-name">' + d.name + '</span>' +
+    '</div>' +
+    '<div class="deckbody">' +
+      '<p class="cmdr">' + d.cmdr + '</p>' +
+      '<div class="deckfoot">' +
+        '<span class="pips" role="img" aria-label="Colours: ' + colorWords + '">' + pips + '</span>' +
+        '<span class="bracket">' + d.bracket + '</span>' +
+        '<span class="owned-tag">' + d.owned + '/' + d.total + ' owned</span>' +
+      '</div>' +
+    '</div>';
+  b.addEventListener("click", () => goto("editor"));
+  library.appendChild(b);
+});
+
+const newTile = document.createElement("button");
+newTile.className = "newdeck";
+newTile.innerHTML =
+  '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+    '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8.5v7"/><path d="M8.5 12h7"/>' +
+  '</svg>New deck';
+newTile.addEventListener("click", () => goto("new"));
+library.appendChild(newTile);
+
+/* ---------- View switching inside the Decks tab ---------- */
+function goto(view) {
+  ["library","new","editor"].forEach(v => {
+    document.getElementById("view-" + v).hidden = (v !== view);
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("[data-goto]").forEach(b =>
+  b.addEventListener("click", () => goto(b.dataset.goto)));
+
+/* ---------- Owned-only autocomplete ---------- */
+const POOL = [
+  { n:"Llanowar Elves",       t:"Creature — Elf Druid",           q:4 },
+  { n:"Elvish Mystic",        t:"Creature — Elf Druid",           q:2 },
+  { n:"Elvish Archdruid",     t:"Creature — Elf Druid",           q:1 },
+  { n:"Fyndhorn Elves",       t:"Creature — Elf Druid",           q:1 },
+  { n:"Devoted Druid",        t:"Creature — Elf Druid",           q:1 },
+  { n:"Beast Whisperer",      t:"Creature — Elf Druid",           q:2 },
+  { n:"Marwyn, the Nurturer", t:"Legendary Creature — Elf Druid", q:1 },
+  { n:"Wirewood Symbiote",    t:"Creature — Insect",              q:1 },
+  { n:"Craterhoof Behemoth",  t:"Creature — Beast",               q:1 },
+  { n:"Birds of Paradise",    t:"Creature — Bird",                q:1 },
+  { n:"Eternal Witness",      t:"Creature — Human Shaman",        q:3 },
+  /* not in the collection — only reachable with the toggle on */
+  { n:"Priest of Titania",    t:"Creature — Elf Druid",           q:0 },
+  { n:"Elvish Warmaster",     t:"Creature — Elf Soldier",         q:0 },
+  { n:"Quirion Ranger",       t:"Creature — Elf Ranger",          q:0 }
+];
+
+const acInput = document.getElementById("ac-input");
+const acList  = document.getElementById("ac-list");
+const allBox  = document.getElementById("allcards");
+const picked  = document.getElementById("picked");
+const pickedCount = document.getElementById("picked-count");
+const chosen = [];
+
+function renderAc() {
+  const term = acInput.value.trim().toLowerCase();
+  if (!term) { acList.hidden = true; acInput.setAttribute("aria-expanded","false"); return; }
+
+  const pool = allBox.checked ? POOL : POOL.filter(c => c.q > 0);
+  const hits = pool.filter(c => c.n.toLowerCase().includes(term)).slice(0, 7);
+
+  acList.innerHTML = "";
+  if (!hits.length) {
+    const owned = POOL.filter(c => c.q > 0).some(c => c.n.toLowerCase().includes(term));
+    acList.innerHTML =
+      '<div class="ac-empty">No cards in your collection match that.' +
+      (owned ? "" : '<br>It may exist in Magic — turn on the wishlist option above to search every card.') +
+      '</div>';
+  } else {
+    hits.forEach(c => {
+      const item = document.createElement("button");
+      item.className = "ac-item";
+      item.type = "button";
+      item.setAttribute("role", "option");
+      item.innerHTML =
+        '<span><strong>' + c.n + '</strong><small>' + c.t + '</small></span>' +
+        (c.q > 0
+          ? '<span class="ac-qty">&#10003; ' + c.q + ' owned</span>'
+          : '<span class="ac-qty own-no">&#9679; wishlist</span>');
+      item.addEventListener("click", () => addCard(c));
+      acList.appendChild(item);
+    });
+  }
+  acList.hidden = false;
+  acInput.setAttribute("aria-expanded", "true");
+}
+
+function addCard(c) {
+  if (!chosen.some(x => x.n === c.n)) chosen.push(c);
+  acInput.value = "";
+  acList.hidden = true;
+  acInput.setAttribute("aria-expanded","false");
+  acInput.focus();
+  renderPicked();
+}
+
+function renderPicked() {
+  picked.innerHTML = "";
+  chosen.forEach(c => {
+    const p = document.createElement("span");
+    p.className = "pill";
+    p.innerHTML = (c.q > 0 ? "&#10003; " : "&#9679; ") + c.n +
+                  ' <button type="button" aria-label="Remove ' + c.n + '">&times;</button>';
+    p.querySelector("button").addEventListener("click", () => {
+      chosen.splice(chosen.indexOf(c), 1);
+      renderPicked();
+    });
+    picked.appendChild(p);
+  });
+  const want = chosen.filter(c => c.q === 0).length;
+  pickedCount.textContent = chosen.length === 0
+    ? "Nothing added yet."
+    : chosen.length + " card" + (chosen.length === 1 ? "" : "s") + " added" +
+      (want ? " — " + want + " on the wishlist." : ", all owned.");
+}
+
+acInput.addEventListener("input", renderAc);
+allBox.addEventListener("change", renderAc);
+document.addEventListener("click", e => {
+  if (!e.target.closest(".ac")) { acList.hidden = true; acInput.setAttribute("aria-expanded","false"); }
+});
+acInput.addEventListener("keydown", e => {
+  if (e.key === "Escape") { acList.hidden = true; acInput.setAttribute("aria-expanded","false"); }
+  if (e.key === "ArrowDown" && !acList.hidden) { e.preventDefault(); acList.querySelector(".ac-item")?.focus(); }
+});
+
+/* ---------- Shelf ---------- */
+const SHELF = [
+  { n:"Wirewood Symbiote",   t:"Creature — Insect",       c:"G", q:1, note:"Untaps an elf every turn — try in Elfball." },
+  { n:"Genesis Wave",        t:"Sorcery",                 c:"G", q:1, note:"Second finisher. Works on an empty board." },
+  { n:"Quirion Ranger",      t:"Creature — Elf Ranger",   c:"G", q:0, note:"Wishlist. Cheap, probably worth $2." },
+  { n:"Scavenging Ooze",     t:"Creature — Ooze",         c:"G", q:1, note:"" },
+  { n:"Sakura-Tribe Elder",  t:"Creature — Snake Shaman", c:"G", q:4, note:"Have four. Spread across decks?" },
+  { n:"Eternal Witness",     t:"Creature — Human Shaman", c:"G", q:3, note:"" },
+  { n:"Elvish Warmaster",    t:"Creature — Elf Soldier",  c:"G", q:0, note:"Wishlist." }
+];
+
+const shelfgrid = document.getElementById("shelfgrid");
+SHELF.forEach((c, i) => {
+  const wrap = document.createElement("div");
+  wrap.className = "shelfcard";
+  wrap.innerHTML =
+    '<div class="cardface c-' + c.c + '" role="img" aria-label="' + c.n + ', ' + c.t + '">' +
+      '<div class="cf-name">' + c.n + '</div><div class="cf-art">art</div>' +
+      '<div class="cf-type">' + c.t + '</div>' +
+      (c.q > 0 ? '<span class="qty">' + c.q + '</span>' : '') +
+    '</div>' +
+    '<div class="cardmeta"><strong>' + c.n + '</strong>' +
+      (c.q > 0 ? '&#10003; ' + c.q + ' owned' : '&#9679; wishlist') + '</div>' +
+    '<label class="skip" for="shelfnote' + i + '">Note on ' + c.n + '</label>' +
+    '<textarea id="shelfnote' + i + '" rows="2" placeholder="Why did you keep this?">' + c.note + '</textarea>';
+  shelfgrid.appendChild(wrap);
+});
+
+/* ---------- Export menu ---------- */
+const exportBtn = document.getElementById("exportbtn");
+const exportMenu = document.getElementById("exportmenu");
+exportBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  const open = exportMenu.hidden;
+  exportMenu.hidden = !open;
+  exportBtn.setAttribute("aria-expanded", String(open));
+});
+document.addEventListener("click", () => {
+  exportMenu.hidden = true;
+  exportBtn.setAttribute("aria-expanded", "false");
+});
+exportMenu.addEventListener("click", e => e.stopPropagation());
+
+/* ---------- Segmented view toggle ---------- */
+document.querySelectorAll(".seg").forEach(seg => {
+  const btns = seg.querySelectorAll("button");
+  btns.forEach(b => b.addEventListener("click", () => {
+    btns.forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  }));
+});
+
+/* Steppers */
+document.querySelectorAll(".stepper").forEach(s => {
+  const out = s.querySelector("output");
+  const [minus, plus] = s.querySelectorAll("button");
+  minus.addEventListener("click", () => { out.value = Math.max(0, +out.value - 1); });
+  plus.addEventListener("click",  () => { out.value = +out.value + 1; });
+});
+
+/* Tabs — WAI-ARIA keyboard pattern */
+const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+function selectTab(tab) {
+  tabs.forEach(t => {
+    const on = t === tab;
+    t.setAttribute("aria-selected", on);
+    t.tabIndex = on ? 0 : -1;
+    document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+  });
+}
+tabs.forEach(t => {
+  t.addEventListener("click", () => selectTab(t));
+  t.addEventListener("keydown", e => {
+    const i = tabs.indexOf(t); let next = null;
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") next = tabs[(i+1) % tabs.length];
+    if (e.key === "ArrowUp"   || e.key === "ArrowLeft")  next = tabs[(i-1+tabs.length) % tabs.length];
+    if (e.key === "Home") next = tabs[0];
+    if (e.key === "End")  next = tabs[tabs.length-1];
+    if (next) { e.preventDefault(); selectTab(next); next.focus(); }
+  });
+});
+
+document.querySelectorAll(".chip").forEach(c => {
+  c.addEventListener("click", () => c.setAttribute("aria-pressed", c.getAttribute("aria-pressed") === "true" ? "false" : "true"));
+});
+</script>
+</body>
+</html>

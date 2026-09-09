@@ -1,0 +1,26 @@
+# The database never goes in the vault, and never goes in git either.
+data/
+*.db
+*.db-wal
+*.db-shm
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+dist/
+.DS_Store
+
+# auth config holds a password hash and the cookie signing secret
+config/auth.json
+
+# Vite build output — regenerate with `cd frontend && npm run build`
+backend/static/
+
+# Cached Scryfall art — refetched on demand
+data/images/
+
+# Deck notes written into a vault, when the default path is used
+vault/
+
+# TypeScript incremental build cache
+*.tsbuildinfo

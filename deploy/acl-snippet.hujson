@@ -1,0 +1,30 @@
+// Tailscale ACL snippet for Grimoire.
+//
+// Paste into your tailnet policy file at
+// https://login.tailscale.com/admin/acls
+//
+// The problem this solves: Tailscale Serve is reachable by everyone on the
+// tailnet. If you share your tailnet with anyone — for a media server, say —
+// they can also open Grimoire and read your collection, its value, and your
+// play journal. The login stops them reading the data; this stops them
+// reaching the service at all.
+//
+// Replace YOU@example.com with your Tailscale login, and MACHINE with the
+// hostname running Grimoire.
+{
+  "acls": [
+    // Grimoire: only your own devices.
+    {
+      "action": "accept",
+      "src":    ["YOU@example.com"],
+      "dst":    ["MACHINE:8444"],
+    },
+
+    // Anything you deliberately share stays open. Example: a media server.
+    // {
+    //   "action": "accept",
+    //   "src":    ["*"],
+    //   "dst":    ["MACHINE:8096"],
+    // },
+  ],
+}

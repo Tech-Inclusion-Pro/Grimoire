@@ -1,0 +1,35 @@
+/* Mycelium Filament — from the Grimoire mockup and the Atrium spec.
+   Contrast figures are against the substrate and are not decoration: the
+   accessibility floor is WCAG 2.2 AA on every screen, including the ones only
+   one person will ever see. */
+:root {
+  --magenta: #a23b84;  --indigo: #3a2b95;  --purple: #6f2fa6;
+
+  --bg: #0d0a1e;       --bg-2: #130f2b;
+
+  --glass:      rgba(255,255,255,0.045);
+  --glass-hi:   rgba(255,255,255,0.075);
+  --glass-edge: rgba(255,255,255,0.10);
+  --glass-lit:  rgba(238,176,218,0.34);
+
+  --thread:     rgba(162,59,132,0.30);
+  --thread-dim: rgba(111,47,166,0.18);
+
+  --ink:      #f5f3fb;   /* ~16:1  */
+  --ink-mid:  #c3bde0;   /* ~9:1   */
+  --ink-low:  #9d96c4;   /* ~5.6:1, never below 14px */
+  --tint-mag: #f0b5dc;
+  --tint-pur: #cfb1f2;
+
+  /* Brand magenta reaches only ~2.98:1 against the substrate, short of the
+     3:1 WCAG 1.4.11 wants for non-text UI. This clears 5.4:1 in the same
+     family. Do not "correct" it back to the brand hex. */
+  --icon: #d16bb0;
+
+  --ok:   #9ce6b4;
+  --warn: #f5c977;
+  --bad:  #ffb3b3;
+
+  --r: 14px;
+  --r-sm: 8px;
+}

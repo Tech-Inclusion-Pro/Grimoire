@@ -1,0 +1,408 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  background:
+    radial-gradient(900px 620px at 12% -8%,  rgba(58,43,149,0.55), transparent 62%),
+    radial-gradient(760px 560px at 92% 4%,   rgba(162,59,132,0.30), transparent 60%),
+    radial-gradient(700px 700px at 62% 108%, rgba(111,47,166,0.28), transparent 62%),
+    linear-gradient(180deg, var(--bg-2), var(--bg));
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+:focus-visible { outline: 3px solid #ffd84d; outline-offset: 2px; border-radius: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+h1 { font-size: 26px; margin: 0 0 4px; }
+h2 { font-size: 18px; margin: 0 0 14px; }
+h3 { font-size: 15px; margin: 0 0 10px; }
+
+a { color: var(--tint-mag); }
+
+.skip {
+  position: absolute; left: -9999px; background: var(--ink); color: var(--bg);
+  padding: 10px 16px; z-index: 99; font-weight: bold;
+}
+.skip:focus { left: 10px; top: 10px; }
+
+.vh {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- shell ---------- */
+/* minmax(0, 1fr) rather than 1fr: a grid track defaults to min-width:auto and
+   will not shrink below its content, so one wide child pushes the entire page
+   sideways. Same reason .main and flex children below get min-width: 0. */
+.shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; }
+
+.rail {
+  padding: 24px 16px; border-right: 1px solid var(--glass-edge);
+  background: rgba(255,255,255,0.02); backdrop-filter: blur(14px);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.brand { font-size: 19px; font-weight: bold; letter-spacing: .3px; margin: 0 0 2px; }
+.brandsub { color: var(--ink-low); font-size: 12px; margin: 0 0 22px; }
+
+[role="tablist"] { display: flex; flex-direction: column; gap: 2px; }
+.tab {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: none; border: 0; border-radius: var(--r-sm);
+  padding: 10px 12px; font: inherit; font-size: 14px; color: var(--ink-mid);
+  cursor: pointer;
+}
+.tab:hover { background: var(--glass); color: var(--ink); }
+.tab[aria-selected="true"] {
+  background: var(--glass-hi); color: var(--ink); font-weight: bold;
+  box-shadow: inset 2px 0 0 var(--icon);
+}
+.tab svg { flex: none; }
+.railfoot { color: var(--ink-low); font-size: 12px; margin-top: 24px; line-height: 1.45; }
+.live { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ok); margin-right: 7px; }
+
+.main { padding: 28px 30px 80px; max-width: 1500px; min-width: 0; }
+
+@media (max-width: 780px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: static; height: auto; border-right: 0;
+    border-bottom: 1px solid var(--glass-edge); }
+  [role="tablist"] { flex-direction: row; flex-wrap: wrap; }
+  .tab { width: auto; }
+  .main { padding: 20px 16px 60px; }
+}
+
+/* ---------- glass tile ---------- */
+.tile {
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  border-radius: var(--r); backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  padding: 20px 22px; position: relative; margin-bottom: 18px;
+}
+.tile::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-lit) 22%,
+              var(--glass-lit) 78%, transparent);
+  border-radius: var(--r) var(--r) 0 0;
+}
+
+/* ---------- controls ---------- */
+label { display: block; font-size: 13px; color: var(--ink-mid); margin-bottom: 5px; }
+input, select, textarea {
+  background: rgba(0,0,0,.28); color: var(--ink);
+  border: 1px solid var(--glass-edge); border-radius: var(--r-sm);
+  padding: 9px 11px; font: inherit; font-size: 15px;
+}
+input::placeholder, textarea::placeholder { color: var(--ink-low); }
+textarea { width: 100%; resize: vertical; }
+
+.btn {
+  background: var(--glass-hi); color: var(--ink);
+  border: 1px solid var(--glass-edge); border-radius: var(--r-sm);
+  padding: 9px 15px; font: inherit; font-size: 15px; cursor: pointer;
+  min-height: 40px;   /* comfortably above the 24px WCAG 2.5.8 floor */
+}
+.btn:hover { background: rgba(255,255,255,.13); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-primary { background: var(--magenta); border-color: var(--magenta); font-weight: bold; }
+.btn-primary:hover { background: #b8479a; }
+.btn-sm { padding: 6px 11px; font-size: 13px; min-height: 32px; }
+.btn-quiet { background: none; }
+
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.spread { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+/* Flex items must be allowed to shrink past their content, or a long card name
+   or a wide input drags the page wider than the screen. */
+.row > *, .spread > * { min-width: 0; }
+.tile { max-width: 100%; }
+input, select, textarea { max-width: 100%; }
+
+.seg { display: inline-flex; border: 1px solid var(--glass-edge); border-radius: var(--r-sm); overflow: hidden; }
+.seg button {
+  background: none; border: 0; color: var(--ink-mid); font: inherit; font-size: 13px;
+  padding: 9px 15px; min-height: 38px; cursor: pointer;
+  border-right: 1px solid var(--glass-edge);
+}
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--glass-hi); color: var(--ink); font-weight: bold; }
+
+/* ---------- text ---------- */
+.lede { color: var(--ink-mid); margin: 0 0 20px; font-size: 14px; }
+.muted { color: var(--ink-low); font-size: 13px; }
+.err { color: var(--bad); }
+.ok { color: var(--ok); }
+.subhead { font-size: 12px; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--ink-low); margin: 0 0 8px; }
+code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px;
+  background: rgba(0,0,0,.34); padding: 2px 6px; border-radius: 4px;
+  color: var(--tint-mag); overflow-wrap: anywhere; }
+
+/* ---------- pills: state never carried by colour alone ---------- */
+.pill {
+  display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px;
+  border: 1px solid var(--glass-edge); background: rgba(255,255,255,.05);
+  white-space: nowrap;
+}
+.pill-own  { color: var(--ok);   border-color: rgba(156,230,180,.45); }
+.pill-none { color: var(--ink-low); }
+.pill-foil { color: var(--tint-mag); border-color: rgba(240,181,220,.45); }
+.pill-warn { color: var(--warn); border-color: rgba(245,201,119,.45); }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px;
+  border: 1px solid var(--glass-edge); background: rgba(255,255,255,.05); color: var(--ink-mid); }
+.badge-ok { color: var(--ok); border-color: rgba(156,230,180,.45); }
+
+/* ---------- tables ---------- */
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+caption { text-align: left; color: var(--ink-mid); font-size: 13px; padding-bottom: 10px; }
+th, td { text-align: left; padding: 9px 11px; border-bottom: 1px solid rgba(255,255,255,.07); }
+th { color: var(--tint-pur); font-size: 12px; text-transform: uppercase;
+  letter-spacing: .7px; white-space: nowrap; }
+tbody tr:hover { background: rgba(255,255,255,.035); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.name { font-weight: bold; }
+
+/* ---------- stats ---------- */
+.stats { display: flex; flex-wrap: wrap; gap: 18px 26px; margin: 0; }
+.stat { min-width: 0; }
+.stat dt { font-size: 12px; color: var(--ink-low); text-transform: uppercase;
+  letter-spacing: .8px; margin: 0 0 2px; }
+.stat dd { margin: 0; font-size: 21px; font-weight: bold; color: var(--tint-mag); }
+
+/* The editor is two columns on a desktop and one on an iPad in portrait. */
+@media (max-width: 1100px) {
+  .editorgrid { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+/* ---------- card art ---------- */
+/* Cards keep their whole frame: the Scryfall licence forbids cropping, which
+   rules out tightening the image for a denser grid. */
+.cardgrid {
+  display: grid;
+  /* min(..., 100%) so a 200px track never exceeds a 360px phone's content box. */
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--card-w, 200px), 100%), 1fr));
+  gap: 16px;
+}
+.cardtile { position: relative; }
+.cardtile img, .art-missing {
+  width: 100%; aspect-ratio: 488 / 680; border-radius: 4.75% / 3.5%;
+  display: block; background: rgba(0,0,0,.35);
+}
+.art-missing {
+  display: grid; place-items: center; text-align: center; padding: 12px;
+  border: 1px dashed var(--glass-edge); color: var(--ink-low); font-size: 13px;
+}
+.cardtile .meta { margin: 7px 2px 0; font-size: 13px; line-height: 1.35; }
+.cardtile .meta .cname { font-weight: bold; display: block; }
+.cardtile .meta .line { color: var(--ink-mid); display: flex; gap: 8px;
+  flex-wrap: wrap; align-items: center; }
+.cardtile .corner {
+  position: absolute; top: 7px; right: 7px; display: flex; gap: 5px;
+}
+/* Bottom-left, not top-left: over the title bar it read as "1 ane Signet". */
+.cardtile .qty {
+  position: absolute; left: 8px; min-width: 28px; text-align: center;
+  bottom: 8px;
+  background: rgba(9,6,20,.92); border: 1px solid var(--glass-lit);
+  border-radius: 999px; padding: 3px 9px; font-size: 13px; font-weight: bold;
+  color: var(--ink);
+}
+/* The badge is positioned against the image, so the tile anchors it there. */
+.cardtile .imgwrap { position: relative; display: block; }
+.cardtile .steppers {
+  display: flex; gap: 6px; margin-top: 6px;
+}
+
+/* ---------- mana pips ---------- */
+.pips { display: inline-flex; gap: 4px; vertical-align: middle; }
+.pip {
+  width: 19px; height: 19px; border-radius: 50%; font-size: 11px; font-weight: bold;
+  display: inline-grid; place-items: center; font-family: Arial, sans-serif;
+}
+.pip-W { background: #f6f0dc; color: #2b2410; }
+.pip-U { background: #9ec6e3; color: #0a1e2e; }
+.pip-B { background: #514c5b; color: #f1eff5; }
+.pip-R { background: #e79b7f; color: #290e06; }
+.pip-G { background: #93bd91; color: #0c200f; }
+.pip-C { background: #bfbdc7; color: #1a1922; }
+
+/* ---------- deck library tiles ---------- */
+.library { display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(272px, 100%), 1fr)); gap: 20px; }
+.deckcard {
+  position: relative; text-align: left; padding: 0; overflow: hidden; cursor: pointer;
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  border-radius: var(--r); color: inherit; font: inherit;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.deckcard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(0,0,0,.5), 0 0 0 1px var(--glass-lit);
+}
+.deckcard .banner { position: relative; height: 132px; overflow: hidden; }
+.deckcard .banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.deckcard .banner::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(13,10,30,.15), rgba(13,10,30,.92));
+}
+.deckcard .banner-empty {
+  height: 100%; background:
+    radial-gradient(300px 160px at 30% 0%, rgba(162,59,132,.4), transparent 70%),
+    linear-gradient(180deg, var(--indigo), var(--bg-2));
+}
+.deckcard .body { padding: 14px 16px 16px; position: relative; }
+.deckcard .decktitle { font-size: 17px; font-weight: bold; margin: 0 0 4px; }
+.deckcard .deckmeta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  margin: 8px 0 0; }
+.deckcard .commander { color: var(--ink-mid); font-size: 13px; margin: 0; }
+
+/* ---------- field picker ---------- */
+.fieldpick { display: flex; flex-wrap: wrap; gap: 6px; }
+.fieldpick label {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0; min-height: 36px;
+  font-size: 13px; color: var(--ink-mid); padding: 6px 12px;
+  border: 1px solid var(--glass-edge); border-radius: 999px; cursor: pointer;
+}
+.fieldpick label:has(input:checked) {
+  background: var(--glass-hi); color: var(--ink); border-color: rgba(240,181,220,.45);
+}
+.fieldpick input { width: 15px; height: 15px; accent-color: var(--magenta); }
+
+kbd {
+  font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px;
+  background: rgba(0,0,0,.4); border: 1px solid var(--glass-edge);
+  border-radius: 4px; padding: 1px 5px; margin-left: 6px; color: var(--ink-mid);
+}
+
+/* ---------- phones ---------- */
+@media (max-width: 560px) {
+  .main { padding: 16px 12px 60px; }
+  .tile { padding: 16px 14px; }
+  h1 { font-size: 22px; }
+  /* Wrap rather than scroll: with four tabs, a sideways strip hides Shelf
+     behind a gesture nobody knows is there. */
+  [role="tablist"] { flex-wrap: wrap; gap: 4px; }
+  .tab { white-space: nowrap; flex: 0 1 auto; }
+  .stat dd { font-size: 18px; }
+  /* Two cards across is the most that stays legible on a phone. */
+  .cardgrid { gap: 10px; }
+}
+
+/* Touch targets. WCAG 2.2 AA (2.5.8) sets a 24x24 CSS px floor; a checkbox at
+   18px is under it and is genuinely awkward with a thumb. */
+input[type="checkbox"], input[type="radio"] {
+  width: 24px; height: 24px; accent-color: var(--magenta); flex: none;
+}
+input[type="range"] { height: 32px; accent-color: var(--magenta); }
+
+/* ---------- card detail ---------- */
+.cardmodal {
+  position: fixed; inset: 0; z-index: 60; background: rgba(5,3,14,.86);
+  display: grid; place-items: center; padding: 16px;
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+}
+.cardmodal-inner {
+  display: grid; grid-template-columns: auto minmax(0, 440px); gap: 22px;
+  background: #16112e; border: 1px solid var(--glass-edge);
+  border-radius: var(--r); padding: 20px; max-width: min(1100px, 100%);
+  max-height: 100%; overflow: auto;
+}
+/* The image fills the height of the screen — that is the point of opening it. */
+.cardmodal-art { display: flex; flex-direction: column; align-items: center; }
+.cardmodal-art img, .cardmodal-art .art-missing {
+  height: min(86vh, 720px); width: auto; max-width: 100%;
+  aspect-ratio: 488 / 680; border-radius: 4.75% / 3.5%;
+}
+.cardmodal-text { min-width: 0; overflow-wrap: anywhere; }
+.cardline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0 4px; }
+.cardtype { color: var(--tint-pur); font-size: 15px; margin: 0 0 12px; }
+.cardtext p { margin: 0 0 9px; font-size: 15px; line-height: 1.5; }
+.ptline { font-size: 19px; margin: 12px 0 0; }
+.flavor { font-style: italic; color: var(--ink-low); font-size: 14px;
+  border-left: 2px solid var(--glass-edge); padding-left: 10px; margin: 14px 0 0; }
+.factgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px 18px; margin: 18px 0 0; }
+.factgrid dt { font-size: 11px; text-transform: uppercase; letter-spacing: .7px;
+  color: var(--ink-low); margin: 0 0 2px; }
+.factgrid dd { margin: 0; font-size: 14px; }
+.wherelist { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink-mid); }
+.wherelist li { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+
+/* Stacked below the image on phones and small tablets. */
+@media (max-width: 900px) {
+  .cardmodal { padding: 0; place-items: stretch; }
+  .cardmodal-inner {
+    grid-template-columns: minmax(0, 1fr); border-radius: 0; border: 0;
+    max-width: 100%; height: 100%; gap: 16px;
+  }
+  .cardmodal-art img, .cardmodal-art .art-missing { height: auto; width: min(100%, 460px); }
+}
+
+/* The whole tile is clickable, so make that obvious. */
+.cardtile .open {
+  display: block; width: 100%; padding: 0; border: 0; background: none;
+  cursor: zoom-in; border-radius: 6px;
+}
+.cardtile .open:hover img { outline: 2px solid var(--glass-lit); outline-offset: 2px; }
+
+/* A card name that opens the card, styled as text rather than a button. */
+.btn-link {
+  background: none; border: 0; padding: 0; font: inherit; font-weight: bold;
+  color: var(--ink); cursor: pointer; text-align: left;
+}
+.btn-link:hover { color: var(--tint-mag); text-decoration: underline; }
+
+/* ---------- battlefield canvas ---------- */
+.field {
+  position: relative; min-height: 420px; border-radius: var(--r-sm);
+  border: 1px dashed var(--glass-edge);
+  background:
+    radial-gradient(520px 260px at 50% 0%, rgba(111,47,166,.16), transparent 70%),
+    rgba(0,0,0,.22);
+  overflow: hidden; touch-action: none;   /* let us handle the drag ourselves */
+}
+.fieldcard {
+  position: absolute; width: 104px; cursor: grab;
+  transition: transform .12s ease, box-shadow .12s ease;
+  border-radius: 5px;
+}
+.fieldcard:active { cursor: grabbing; }
+.fieldcard img, .fieldcard .art-missing { border-radius: 5px; display: block; width: 100%; }
+/* Tapped is a 90-degree turn, the way it works on a real table. */
+.fieldcard.tapped { transform: rotate(90deg); }
+.fieldcard.chosen { box-shadow: 0 0 0 3px var(--tint-mag), 0 10px 26px rgba(0,0,0,.55); z-index: 5; }
+.fieldcard:hover { z-index: 4; }
+.fieldcounter {
+  position: absolute; right: -6px; bottom: -6px; min-width: 26px; text-align: center;
+  background: var(--magenta); color: #fff; border-radius: 999px;
+  padding: 2px 8px; font-size: 12px; font-weight: bold;
+  border: 1px solid rgba(255,255,255,.35);
+}
+@media (max-width: 560px) { .field { min-height: 320px; } }
+
+/* ---------- cross-zone dragging ---------- */
+.draggable { cursor: grab; touch-action: none; }
+.draggable:active { cursor: grabbing; }
+
+.dropzone { border-radius: var(--r-sm); transition: background .12s ease, box-shadow .12s ease; }
+/* A zone lights up while a card is over it, so the drop point is never a guess. */
+.dropzone.dropping, .field.dropping {
+  background: rgba(162,59,132,.14);
+  box-shadow: inset 0 0 0 2px var(--tint-mag);
+}
+
+.dragghost {
+  position: fixed; width: 96px; margin: -68px 0 0 -48px;
+  pointer-events: none;   /* the hit test must find the zone, not the ghost */
+  z-index: 80; opacity: .92; transform: rotate(-4deg);
+  filter: drop-shadow(0 12px 22px rgba(0,0,0,.6));
+}
+.dragghost img, .dragghost .art-missing { border-radius: 5px; width: 100%; display: block; }
