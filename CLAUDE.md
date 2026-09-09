@@ -161,6 +161,14 @@ FastAPI serves as a single-page app. Same arrangement as the server dashboard.
 - **Use pointer events, not HTML5 drag-and-drop.** HTML5 drag does not fire on
   touch, which is most of how this app is used. `touch-action: none` on the
   field stops the browser scrolling instead of dragging.
+- **One drag system for every zone**, hoisted into `Playtest`. Drop targets are
+  whole `<section>`s carrying `data-zone`: an inner wrapper meant a drop on the
+  section's padding hit the `<section>` itself, and `closest()` cannot reach a
+  `data-zone` that is a child rather than an ancestor.
+- **Nothing that changes layout may appear or disappear mid-drag.** Selecting a
+  card on pointerdown rendered a panel above the battlefield and pushed it down,
+  so cards landed well away from where they were dropped. Selection UI is
+  suppressed while a ghost exists, and only the battlefield selects on press.
 - **Dragging is never the only route.** WCAG 2.5.7: zone changes are buttons
   and arrow keys nudge the selection. A 4px slop distinguishes a shaky tap from
   a drag.
