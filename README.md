@@ -64,14 +64,63 @@ name their weakness rather than being hidden.
 result should not quietly change a list you have already built. Park cards with
 a note, then send them to a deck as a batch.
 
-**Playtester** — Goldfishing with no rules enforcement. Battlefield, hand and
-the library/graveyard/exile/command piles all sit on one playmat, so a card is
-never more than a short drag from where it needs to go. Free-form battlefield,
-click to tap, opening hand, mulligans, counters, life totals and keyboard
-shortcuts.
+**Playtester** — Goldfishing with no rules enforcement. Everything sits on one
+playmat, so a card is never far from where it needs to go.
+
+```
+┌──────────────────────────────────────────────┐
+│  BATTLEFIELD          drag anywhere          │
+├──────────────────────────────────────────────┤
+│  HAND     ▮ ▮ ▮ ▮ ▮ ▮ ▮                      │
+├────────┬──────────┬────────┬─────────────────┤
+│LIBRARY │ GRAVEYARD│ EXILE  │ COMMAND ZONE    │
+└────────┴──────────┴────────┴─────────────────┘
+```
+
+**Two ways to move a card, always**: click it and pick a destination from the
+bar at the bottom of the screen, or drag it. Clicking a permanent on the
+battlefield taps it instead, since that is what a click means there.
+
+Opening hand, mulligan counter, tap/untap, +1/+1 counters, life totals, a turn
+counter and a log. Starting life follows the format, and the commander begins in
+the command zone. Full screen from the toolbar or <kbd>F</kbd>.
+
+Keyboard: <kbd>D</kbd> draw · <kbd>U</kbd> untap all · <kbd>N</kbd> next turn ·
+<kbd>M</kbd> mulligan · <kbd>F</kbd> full screen · <kbd>Esc</kbd> deselect ·
+arrow keys nudge the selected permanent.
 
 Everything works in a phone or tablet browser over your tailnet — no app, no
 install.
+
+---
+
+## Reading a card
+
+Click any card anywhere — collection, deck, shelf, synergy results, playtest —
+and it opens full height with the printed text written out beside it: mana cost,
+colour identity, mana value, type line, rules text line by line, power and
+toughness or loyalty, flavour, set, rarity, price, artist, format legality,
+which decks use it, and **where your copies physically are**.
+
+Side by side above 900px, stacked below it. Double-faced cards get a button to
+turn them over. <kbd>Esc</kbd> closes, and Tab stays inside the dialog.
+
+---
+
+## Phones and tablets
+
+Works in any modern mobile browser over your tailnet. Verified by measurement at
+360px (a phone), 834px (a tablet in portrait) and 1194px (landscape):
+
+- No horizontal page scroll on any view at any of those widths
+- Smallest interactive target is 24px, meeting WCAG 2.2 AA (2.5.8)
+- The rail becomes a wrapping tab strip below 780px, so every section stays
+  reachable rather than hiding behind a sideways scroll
+
+Add it to your home screen and it launches standalone, without browser chrome.
+
+Needs iOS 15.4+ or Chrome 105+ for `:has()`; older browsers lose a highlight on
+selected chips and nothing else.
 
 ---
 
