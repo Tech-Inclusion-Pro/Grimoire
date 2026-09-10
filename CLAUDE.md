@@ -179,6 +179,14 @@ FastAPI serves as a single-page app. Same arrangement as the server dashboard.
   card on pointerdown rendered a panel above the battlefield and pushed it down,
   so cards landed well away from where they were dropped. Selection UI is
   suppressed while a ghost exists, and only the battlefield selects on press.
+- **Handle `pointercancel`.** The browser takes a gesture over for a scroll,
+  an edge swipe or a second finger; without cleanup the ghost sticks and the
+  card never lands. The hand is a horizontal scroll container, which is exactly
+  where that happens.
+- **Never leave dragging as the only way to move a card.** Rebuilding the hand
+  as a strip dropped its Move button, so a failed drag left no way out of hand
+  at all. Clicking a card outside the battlefield selects it and offers
+  destinations; dragging is the shortcut, not the mechanism.
 - **Dragging is never the only route.** WCAG 2.5.7: zone changes are buttons
   and arrow keys nudge the selection. A 4px slop distinguishes a shaky tap from
   a drag.

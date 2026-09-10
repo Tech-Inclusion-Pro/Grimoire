@@ -496,3 +496,14 @@ input[type="range"] { height: 32px; accent-color: var(--magenta); }
   .handcard { width: 84px; }
   .pile { flex: 1 1 120px; }
 }
+
+/* ---------- fullscreen play ---------- */
+.playshell.fullscreen {
+  background:
+    radial-gradient(900px 620px at 12% -8%, rgba(58,43,149,.55), transparent 62%),
+    linear-gradient(180deg, var(--bg-2), var(--bg));
+  padding: 14px 18px; overflow-y: auto; height: 100%;
+}
+/* The mat takes the whole screen when there is no page around it. */
+.playshell.fullscreen .playmat { min-height: calc(100vh - 190px); }
+.playshell.fullscreen h1 { font-size: 20px; }

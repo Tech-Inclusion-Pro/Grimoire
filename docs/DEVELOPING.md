@@ -104,8 +104,12 @@ Opening hand, mulligan counter, six zones, tap/untap, +1/+1 counters, life
 totals, a turn counter and a log. Starting life follows the format: 40 for
 Commander, 20 otherwise, and the commander begins in the command zone.
 
+**Two ways to move a card**, always: click it and pick a destination, or drag
+it. Clicking a permanent on the battlefield taps it instead, since that is what
+a click means there; its action row carries the destinations.
+
 Keyboard: <kbd>D</kbd> draw, <kbd>U</kbd> untap all, <kbd>N</kbd> next turn,
-<kbd>M</kbd> mulligan, <kbd>Esc</kbd> deselect.
+<kbd>M</kbd> mulligan, <kbd>F</kbd> full screen, <kbd>Esc</kbd> deselect.
 
 Dragging is never the *only* way to do anything: WCAG 2.5.7 forbids that. Zone
 changes are buttons, and the arrow keys nudge whichever permanent is selected

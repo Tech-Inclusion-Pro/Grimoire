@@ -80,6 +80,8 @@ export default function Playtest({ id }: { id: number }) {
   const [log, setLog] = useState<string[]>([])
   const [zoom, setZoom] = useState<{ o: string; c: string | null } | null>(null)
   const fieldWidth = useRef(900)
+  const shell = useRef<HTMLDivElement>(null)
+  const [fullscreen, setFullscreen] = useState(false)
 
   // One drag system for every zone. `moved` is what separates a tap from a
   // drag; without it every attempt to pick a card up would also tap it.
@@ -150,6 +152,24 @@ export default function Playtest({ id }: { id: number }) {
     setSelected(null)
   }, [])
 
+  // Fullscreen the play area, so a goldfish session on a tablet is not framed
+  // by the browser and the nav rail.
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen()
+      else await shell.current?.requestFullscreen()
+    } catch {
+      // Safari on iPhone has no Fullscreen API for arbitrary elements; the
+      // button simply does nothing there rather than throwing.
+    }
+  }, [])
+
+  useEffect(() => {
+    const onChange = () => setFullscreen(document.fullscreenElement !== null)
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+
   const moveTo = useCallback((uid: string, to: Zone, x?: number, y?: number) => {
     move(uid, to, false, x != null && y != null ? { x, y } : undefined)
   }, [move])
@@ -197,11 +217,12 @@ export default function Playtest({ id }: { id: number }) {
         e.preventDefault()
         setTurn(t => t + 1); untapAll(); draw(1)
       }
+      else if (key === 'f') { e.preventDefault(); void toggleFullscreen() }
       else if (key === 'escape') setSelected(null)
     }
     addEventListener('keydown', onKey)
     return () => removeEventListener('keydown', onKey)
-  }, [draw, untapAll, mulligan])
+  }, [draw, untapAll, mulligan, toggleFullscreen])
 
   /** Handlers for one card. `onTapLike` is what a press that never moved
    *  means in this zone: tapping on the battlefield, reading it anywhere else. */
@@ -233,6 +254,14 @@ export default function Playtest({ id }: { id: number }) {
         const under = document.elementFromPoint(e.clientX, e.clientY)
         const target = under?.closest('[data-zone]')?.getAttribute('data-zone')
         setOverZone((target as Zone) ?? null)
+      },
+      // The browser fires this when it takes the gesture over — a scroll
+      // recognised inside the hand strip, a system edge swipe, a second
+      // finger. Without it the ghost sticks and the card never lands.
+      onPointerCancel: () => {
+        drag.current = null
+        setGhost(null)
+        setOverZone(null)
       },
       onPointerUp: (e: React.PointerEvent) => {
         const d = drag.current
@@ -271,9 +300,9 @@ export default function Playtest({ id }: { id: number }) {
   const chosen = ZONES.flatMap(z => zones[z]).find(c => c.uid === selected) ?? null
 
   return (
-    <>
+    <div ref={shell} className={fullscreen ? 'playshell fullscreen' : 'playshell'}>
       <button className="btn btn-quiet" style={{ marginBottom: 14 }}
-              onClick={() => navigate({ name: 'deck', id })}>
+              onClick={() => navigate({ name: 'deck', id })} hidden={fullscreen}>
         ← Back to {deckName}
       </button>
 
@@ -325,6 +354,10 @@ export default function Playtest({ id }: { id: number }) {
               setMulligans(0); setTurn(1); setLife(startingLife)
               deal(source, commanders); say('Reset.')
             }}>Restart</button>
+            <button className="btn" onClick={() => void toggleFullscreen()}
+                    aria-pressed={fullscreen}>
+              {fullscreen ? 'Exit full screen' : 'Full screen'} <kbd>F</kbd>
+            </button>
           </div>
         </div>
       </div>
@@ -341,6 +374,9 @@ export default function Playtest({ id }: { id: number }) {
             ))}
             <button className="btn btn-sm" onClick={() => move(chosen.uid, 'library', true)}>
               Bottom of library
+            </button>
+            <button className="btn btn-sm" onClick={() => setZoom({ o: chosen.oracle_id, c: chosen.card_id })}>
+              Read card
             </button>
             <button className="btn btn-sm btn-quiet" onClick={() => setSelected(null)}>
               Cancel <kbd>Esc</kbd>
@@ -380,18 +416,17 @@ export default function Playtest({ id }: { id: number }) {
         />
 
         <Hand cards={zones.hand} selected={selected} dragProps={dragProps}
-              dropping={overZone === 'hand'}
-              onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })} />
+              dropping={overZone === 'hand'} onSelect={setSelected} />
 
         <div className="mat-piles">
           <Pile zone="library" cards={zones.library} facedown
                 dropping={overZone === 'library'} dragProps={dragProps}
                 hint="Click to draw" onActivate={() => draw(1)}
-                onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })} />
+                onSelect={setSelected} selected={selected} />
           {(['graveyard', 'exile', 'command'] as Zone[]).map(zone => (
             <Pile key={zone} zone={zone} cards={zones[zone]}
                   dropping={overZone === zone} dragProps={dragProps}
-                  onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })} />
+                  onSelect={setSelected} selected={selected} />
           ))}
         </div>
       </div>
@@ -417,19 +452,19 @@ export default function Playtest({ id }: { id: number }) {
               {log.map((line, i) => <li key={i}>{line}</li>)}
             </ul>}
       </div>
-    </>
+    </div>
   )
 }
 
 /** The hand: a horizontal strip along the bottom of the playmat, scrolling
  *  sideways when it gets long rather than growing the page. */
 function Hand(
-  { cards, selected, dragProps, dropping, onZoom }: {
+  { cards, selected, dragProps, dropping, onSelect }: {
     cards: CardState[]
     selected: string | null
     dragProps: (card: CardState, from: Zone, onTapLike: () => void) => Record<string, unknown>
     dropping: boolean
-    onZoom: (card: CardState) => void
+    onSelect: (uid: string) => void
   },
 ) {
   return (
@@ -450,12 +485,12 @@ function Hand(
                className="handcard draggable"
                role="button"
                tabIndex={0}
-               aria-label={`${card.name} — open`}
+               aria-label={`${card.name} — choose where to send it`}
                onKeyDown={e => {
-                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onZoom(card) }
+                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(card.uid) }
                }}
                style={{ outline: selected === card.uid ? '3px solid var(--tint-mag)' : undefined }}
-               {...dragProps(card, 'hand', () => onZoom(card))}>
+               {...dragProps(card, 'hand', () => onSelect(card.uid))}>
             <CardArt cardId={card.card_id} name={card.name}
                      typeLine={card.type_line} variant="small" />
           </div>
@@ -469,12 +504,13 @@ function Hand(
  *  Sixteen library cards laid out individually pushed everything else off the
  *  screen; a pile with a count is how the zone reads on a table. */
 function Pile(
-  { zone, cards, dropping, dragProps, onZoom, facedown, hint, onActivate }: {
+  { zone, cards, dropping, dragProps, onSelect, selected, facedown, hint, onActivate }: {
     zone: Zone
     cards: CardState[]
     dropping: boolean
     dragProps: (card: CardState, from: Zone, onTapLike: () => void) => Record<string, unknown>
-    onZoom: (card: CardState) => void
+    onSelect: (uid: string) => void
+    selected: string | null
     facedown?: boolean
     hint?: string
     onActivate?: () => void
@@ -505,11 +541,12 @@ function Pile(
         )}
         {top && !facedown && (
           <div className="piletop draggable" role="button" tabIndex={0}
-               aria-label={`${top.name}, top of ${ZONE_LABELS[zone].toLowerCase()} — open`}
+               style={{ outline: selected === top.uid ? '3px solid var(--tint-mag)' : undefined }}
+               aria-label={`${top.name}, top of ${ZONE_LABELS[zone].toLowerCase()} — choose where to send it`}
                onKeyDown={e => {
-                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onZoom(top) }
+                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(top.uid) }
                }}
-               {...dragProps(top, zone, () => onZoom(top))}>
+               {...dragProps(top, zone, () => onSelect(top.uid))}>
             <CardArt cardId={top.card_id} name={top.name}
                      typeLine={top.type_line} variant="small" />
           </div>
@@ -527,11 +564,12 @@ function Pile(
         <div className="pilelist">
           {cards.map(card => (
             <div key={card.uid} className="handcard draggable" role="button" tabIndex={0}
-                 aria-label={`${card.name} — open`}
+                 style={{ outline: selected === card.uid ? '3px solid var(--tint-mag)' : undefined }}
+                 aria-label={`${card.name} — choose where to send it`}
                  onKeyDown={e => {
-                   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onZoom(card) }
+                   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(card.uid) }
                  }}
-                 {...dragProps(card, zone, () => onZoom(card))}>
+                 {...dragProps(card, zone, () => onSelect(card.uid))}>
               <CardArt cardId={card.card_id} name={card.name}
                        typeLine={card.type_line} variant="small" />
             </div>
