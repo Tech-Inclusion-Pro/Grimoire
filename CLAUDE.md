@@ -170,7 +170,11 @@ FastAPI serves as a single-page app. Same arrangement as the server dashboard.
 - **One drag system for every zone**, hoisted into `Playtest`. Drop targets are
   whole `<section>`s carrying `data-zone`: an inner wrapper meant a drop on the
   section's padding hit the `<section>` itself, and `closest()` cannot reach a
-  `data-zone` that is a child rather than an ancestor.
+  `data-zone` that is a child rather than an ancestor. The battlefield is the
+  same — its `data-zone` is on the panel and `data-field` marks the canvas, so
+  a drop on the heading or the padding still lands, clamped into the canvas.
+  While only the canvas was a target, those drops were silently no-ops and the
+  card appeared to snap back.
 - **Nothing that changes layout may appear or disappear mid-drag.** Selecting a
   card on pointerdown rendered a panel above the battlefield and pushed it down,
   so cards landed well away from where they were dropped. Selection UI is

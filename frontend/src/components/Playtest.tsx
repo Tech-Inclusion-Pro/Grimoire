@@ -249,7 +249,12 @@ export default function Playtest({ id }: { id: number }) {
         if (!to) return
 
         if (to === 'battlefield') {
-          const box = holder!.getBoundingClientRect()
+          // Position is always measured against the canvas, even when the drop
+          // landed on the panel around it; clamp() then pulls it inside.
+          const canvas = (holder!.matches('[data-field]')
+            ? holder!
+            : holder!.querySelector('[data-field]')) as HTMLElement | null
+          const box = (canvas ?? holder!).getBoundingClientRect()
           const x = clamp(e.clientX - box.left - CARD_W / 2, box.width - CARD_W)
           const y = clamp(e.clientY - box.top - CARD_H / 2, box.height - CARD_H)
           if (from === 'battlefield') placeOnField(card.uid, x, y)
@@ -524,7 +529,7 @@ function Battlefield(
   const chosen = cards.find(c => c.uid === selected)
 
   return (
-    <section className="tile" aria-labelledby="zone-battlefield">
+    <section className="tile" data-zone="battlefield" aria-labelledby="zone-battlefield">
       <div className="spread">
         <h3 id="zone-battlefield" style={{ margin: 0 }}>Battlefield</h3>
         <div className="row" style={{ gap: 8 }}>
@@ -539,7 +544,7 @@ function Battlefield(
         selected — hold Shift to move further.
       </p>
 
-      <div className={`field${dropping ? ' dropping' : ''}`} ref={field} data-zone="battlefield">
+      <div className={`field${dropping ? ' dropping' : ''}`} ref={field} data-field>
         {cards.length === 0 && (
           <p className="muted" style={{ padding: 16 }}>
             Nothing in play. Select a card in hand and send it to the battlefield.
