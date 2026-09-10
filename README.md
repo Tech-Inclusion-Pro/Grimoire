@@ -23,8 +23,9 @@ following, no comments.
 ## What it does
 
 **Collection** — Import your collection once, then search it with Scryfall-style
-syntax. Every card shows as a card, with a Cards/Table toggle and a multi-select
-for what to show underneath.
+syntax, or use the **advanced search** form if you would rather not remember it.
+Every card shows as a card, with a Cards/Table toggle and a multi-select for
+what to show underneath.
 
 ```
 t:creature c:g mv<=3 -is:deck        cheap green creatures in no deck
@@ -33,6 +34,13 @@ value>=40                            cards you hold that are worth $40+
 !"Llanowar Elves"                    that card exactly
 (r:rare or r:mythic) t:artifact      grouping with or
 ```
+
+The advanced form covers name, rules text, type, colours (including, exactly or
+at most), commander colour identity, mana value, power, toughness, price, what
+your own copy is worth, release year, rarity, set, where a card is filed, and
+thirteen conditions that can each be required or excluded. It writes the query
+into the search box rather than searching behind your back, so the syntax stays
+visible and you pick it up by using it.
 
 **Deck builder** — Build from cards you own. Add one at a time or paste a whole
 list. Group by category, type, mana value, colour or tag; filter the deck with

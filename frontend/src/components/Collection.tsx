@@ -4,6 +4,7 @@ import { api, ApiError, type CardRow, type Location, type Printing,
 import { CardArt } from './CardArt'
 import CardDetail from './CardDetail'
 import ViewControls, { CardMeta, useViewPrefs } from './ViewControls'
+import AdvancedSearch from './AdvancedSearch'
 
 const money = (n: number | null | undefined) => n == null ? '—' : `$${n.toFixed(2)}`
 
@@ -132,6 +133,17 @@ export default function Collection({ onChanged }: { onChanged: () => void }) {
         )}
 
         <details style={{ marginTop: 18, borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 14 }}>
+          <summary style={{ cursor: 'pointer', color: 'var(--tint-mag)', fontSize: 14 }}>
+            Advanced search
+          </summary>
+          <p className="muted" style={{ margin: '10px 0 14px' }}>
+            Fills the box above rather than searching behind your back, so the
+            syntax stays visible and you can adjust it by hand.
+          </p>
+          <AdvancedSearch onBuild={q => { setQuery(q); void run(q, ownedOnly) }} />
+        </details>
+
+        <details style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 14 }}>
           <summary style={{ cursor: 'pointer', color: 'var(--tint-mag)', fontSize: 14 }}>
             Search syntax
           </summary>
