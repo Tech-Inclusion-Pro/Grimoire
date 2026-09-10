@@ -56,9 +56,11 @@ name their weakness rather than being hidden.
 result should not quietly change a list you have already built. Park cards with
 a note, then send them to a deck as a batch.
 
-**Playtester** — Goldfishing with no rules enforcement. Opening hand, mulligans,
-a free-form battlefield you drag cards around, tap/untap, counters, life totals
-and keyboard shortcuts.
+**Playtester** — Goldfishing with no rules enforcement. Battlefield, hand and
+the library/graveyard/exile/command piles all sit on one playmat, so a card is
+never more than a short drag from where it needs to go. Free-form battlefield,
+click to tap, opening hand, mulligans, counters, life totals and keyboard
+shortcuts.
 
 Everything works in a phone or tablet browser over your tailnet — no app, no
 install.

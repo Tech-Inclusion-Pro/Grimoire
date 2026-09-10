@@ -411,3 +411,88 @@ input[type="range"] { height: 32px; accent-color: var(--magenta); }
    image has an empty alt and is not announced twice. */
 .brand { display: flex; align-items: center; gap: 9px; }
 .brandmark { border-radius: 50%; flex: none; }
+
+/* ---------- the playmat ---------- */
+/* Battlefield, hand and the piles in one view. Before this they were separate
+   tiles and a drag from hand to battlefield could mean scrolling first. */
+.playmat {
+  display: grid;
+  grid-template-rows: minmax(300px, 1fr) auto auto;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--r);
+  border: 1px solid var(--glass-edge);
+  background:
+    radial-gradient(700px 340px at 50% 0%, rgba(111,47,166,.18), transparent 72%),
+    rgba(0,0,0,.26);
+  min-height: 74vh;
+  margin-bottom: 18px;
+}
+
+.mat-label {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 2px 6px; color: var(--ink-low);
+}
+.mat-label h3 {
+  margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: .9px;
+  color: var(--ink-low); font-weight: bold;
+}
+.mat-label span {
+  font-size: 11px; padding: 1px 7px; border-radius: 999px;
+  background: rgba(255,255,255,.07); color: var(--ink-mid);
+}
+
+.mat-battlefield, .mat-hand, .pile {
+  border-radius: var(--r-sm); padding: 8px 10px;
+  border: 1px dashed var(--glass-edge); background: rgba(255,255,255,.02);
+  transition: background .12s ease, box-shadow .12s ease;
+  min-width: 0;
+}
+.mat-battlefield { display: flex; flex-direction: column; }
+.mat-battlefield .field {
+  flex: 1; min-height: 0; border: 0; background: none;
+}
+.mat-battlefield.dropping, .mat-hand.dropping, .pile.dropping {
+  background: rgba(162,59,132,.16);
+  box-shadow: inset 0 0 0 2px var(--tint-mag);
+}
+
+/* Hand: a strip that scrolls sideways rather than growing the page. */
+.handrow {
+  display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden;
+  min-height: 152px; padding-bottom: 4px;
+}
+.handcard { width: 104px; flex: none; border-radius: 5px; }
+.handcard img, .handcard .art-missing { border-radius: 5px; width: 100%; display: block; }
+
+/* Piles: library, graveyard, exile, command. */
+.mat-piles { display: flex; gap: 10px; flex-wrap: wrap; }
+.pile { flex: 1 1 150px; max-width: 220px; }
+.pilebody { display: flex; align-items: center; justify-content: center; min-height: 116px; }
+.piletop { width: 82px; border-radius: 4px; }
+.piletop img, .piletop .art-missing { border-radius: 4px; width: 100%; display: block; }
+.cardback {
+  width: 82px; height: 114px; border-radius: 6px; cursor: pointer;
+  border: 2px solid rgba(255,255,255,.22);
+  background:
+    radial-gradient(60px 40px at 50% 38%, rgba(240,181,220,.30), transparent 70%),
+    linear-gradient(160deg, var(--indigo), var(--purple) 55%, var(--magenta));
+  display: grid; place-items: center;
+  color: #fff; font-weight: bold; font-size: 17px;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.35), 6px 6px 0 rgba(0,0,0,.22);
+}
+.cardback:hover { filter: brightness(1.12); }
+.pilehint { margin: 4px 0 0; font-size: 11px; color: var(--ink-low); text-align: center; }
+.pileall { width: 100%; margin-top: 6px; }
+.pilelist {
+  display: flex; gap: 6px; overflow-x: auto; margin-top: 8px;
+  padding-bottom: 4px; max-width: 100%;
+}
+.pilelist .handcard { width: 76px; }
+
+@media (max-width: 760px) {
+  .playmat { min-height: auto; grid-template-rows: minmax(260px, auto) auto auto; }
+  .handrow { min-height: 124px; }
+  .handcard { width: 84px; }
+  .pile { flex: 1 1 120px; }
+}

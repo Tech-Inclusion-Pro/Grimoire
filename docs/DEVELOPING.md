@@ -89,11 +89,16 @@ Two rules worth knowing:
 `/decks/<id>/playtest`. Goldfishing only — **nothing enforces rules**, checks
 costs, or stops an illegal play, exactly as the spec scopes it.
 
-The **battlefield is a free-form canvas**, the way Archidekt plays it: drag a
-permanent anywhere and it stays there, click it to tap (it turns 90°), and
-cards may overlap. New permanents cascade into open space; **Tidy up** re-lays
-them out. Everything else — hand, graveyard, exile, command — stays a grid,
-because there is nothing spatial about those.
+Battlefield, hand and the piles share **one playmat**, so nothing has to be
+scrolled to reach a drop target. The battlefield is a free-form canvas the way
+Archidekt plays it: drag a permanent anywhere and it stays there, click it to
+tap (it turns 90°), and cards may overlap. New permanents cascade into open
+space; **Tidy up** re-lays them out.
+
+The hand is a strip that scrolls sideways, and library, graveyard, exile and
+command are **piles with a count** rather than grids — seventeen library cards
+laid out individually pushed everything else off the screen. Click the library
+to draw; drag the top card off any pile.
 
 Opening hand, mulligan counter, six zones, tap/untap, +1/+1 counters, life
 totals, a turn counter and a log. Starting life follows the format: 40 for

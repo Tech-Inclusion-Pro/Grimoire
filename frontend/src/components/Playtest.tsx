@@ -282,8 +282,9 @@ export default function Playtest({ id }: { id: number }) {
           <h1>Playtesting {deckName}</h1>
           <p className="lede">
             Goldfishing only — nothing here enforces rules, checks costs or
-            stops an illegal play. Move a card by selecting it and choosing
-            where it goes.
+            stops an illegal play. Drag cards between zones; click one on the
+            battlefield to tap it. Every card also has buttons, and the arrow
+            keys nudge whatever is selected.
           </p>
         </div>
       </div>
@@ -348,40 +349,52 @@ export default function Playtest({ id }: { id: number }) {
         </div>
       )}
 
-      <Battlefield
-        cards={zones.battlefield}
-        selected={selected}
-        onSelect={setSelected}
-        onWidth={w => { fieldWidth.current = w }}
-        dragProps={dragProps}
-        dragging={ghost !== null}
-        dropping={overZone === 'battlefield'}
-        onPlace={placeOnField}
-        onTap={uid => setZones(p => p && {
-          ...p, battlefield: p.battlefield.map(c =>
-            c.uid === uid ? { ...c, tapped: !c.tapped } : c),
-        })}
-        onCounter={(uid, delta) => setZones(p => p && {
-          ...p, battlefield: p.battlefield.map(c =>
-            c.uid === uid ? { ...c, counters: Math.max(0, c.counters + delta) } : c),
-        })}
-        onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })}
-        onMove={move}
-        onTidy={() => setZones(p => p && {
-          ...p, battlefield: p.battlefield.map((c, i) => ({
-            ...c, ...nextSpot(p.battlefield.slice(0, i), fieldWidth.current),
-          })),
-        })}
-      />
+      {/* One playmat: battlefield, hand and the piles all in view at once, so
+          a card only ever travels a short distance and nothing has to be
+          scrolled to reach a drop target. */}
+      <div className="playmat">
+        <Battlefield
+          cards={zones.battlefield}
+          selected={selected}
+          onSelect={setSelected}
+          onWidth={w => { fieldWidth.current = w }}
+          dragProps={dragProps}
+          dragging={ghost !== null}
+          dropping={overZone === 'battlefield'}
+          onPlace={placeOnField}
+          onTap={uid => setZones(p => p && {
+            ...p, battlefield: p.battlefield.map(c =>
+              c.uid === uid ? { ...c, tapped: !c.tapped } : c),
+          })}
+          onCounter={(uid, delta) => setZones(p => p && {
+            ...p, battlefield: p.battlefield.map(c =>
+              c.uid === uid ? { ...c, counters: Math.max(0, c.counters + delta) } : c),
+          })}
+          onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })}
+          onMove={move}
+          onTidy={() => setZones(p => p && {
+            ...p, battlefield: p.battlefield.map((c, i) => ({
+              ...c, ...nextSpot(p.battlefield.slice(0, i), fieldWidth.current),
+            })),
+          })}
+        />
 
-      {(['hand', 'command', 'graveyard', 'exile', 'library'] as Zone[]).map(zone => (
-        <ZonePanel key={zone} zone={zone} cards={zones[zone]}
-                   selected={selected} onSelect={setSelected}
-                   dragProps={dragProps}
-                   dropping={overZone === zone}
-                   anyDrag={ghost !== null}
-                   onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })} />
-      ))}
+        <Hand cards={zones.hand} selected={selected} dragProps={dragProps}
+              dropping={overZone === 'hand'}
+              onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })} />
+
+        <div className="mat-piles">
+          <Pile zone="library" cards={zones.library} facedown
+                dropping={overZone === 'library'} dragProps={dragProps}
+                hint="Click to draw" onActivate={() => draw(1)}
+                onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })} />
+          {(['graveyard', 'exile', 'command'] as Zone[]).map(zone => (
+            <Pile key={zone} zone={zone} cards={zones[zone]}
+                  dropping={overZone === zone} dragProps={dragProps}
+                  onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })} />
+          ))}
+        </div>
+      </div>
 
       {/* The card following the pointer. pointer-events:none so the hit test
           underneath finds the zone rather than the ghost itself. */}
@@ -408,58 +421,123 @@ export default function Playtest({ id }: { id: number }) {
   )
 }
 
-function ZonePanel(
-  { zone, cards, selected, onSelect, onZoom, dragProps, dropping, anyDrag }: {
-    zone: Zone; cards: CardState[]; selected: string | null
-    onSelect: (uid: string | null) => void
-    onZoom: (card: CardState) => void
+/** The hand: a horizontal strip along the bottom of the playmat, scrolling
+ *  sideways when it gets long rather than growing the page. */
+function Hand(
+  { cards, selected, dragProps, dropping, onZoom }: {
+    cards: CardState[]
+    selected: string | null
     dragProps: (card: CardState, from: Zone, onTapLike: () => void) => Record<string, unknown>
     dropping: boolean
-    anyDrag: boolean
+    onZoom: (card: CardState) => void
   },
 ) {
-  if (zone !== 'hand' && cards.length === 0 && !anyDrag) return null
   return (
-    <section className={`tile dropzone${dropping ? ' dropping' : ''}`}
-             data-zone={zone} aria-labelledby={`zone-${zone}`}>
-      <div className="spread">
-        <h3 id={`zone-${zone}`} style={{ margin: 0 }}>{ZONE_LABELS[zone]}</h3>
-        <span className="muted">{cards.length} card{cards.length === 1 ? '' : 's'}</span>
+    <section className={`mat-hand${dropping ? ' dropping' : ''}`}
+             data-zone="hand" aria-labelledby="zone-hand">
+      <div className="mat-label">
+        <h3 id="zone-hand">Hand</h3>
+        <span>{cards.length}</span>
       </div>
-      <div>
-      {cards.length === 0 && (
-        <p className="muted" style={{ margin: '10px 0' }}>
-          {anyDrag ? `Drop here to send it to the ${ZONE_LABELS[zone].toLowerCase()}.` : 'Empty.'}
-        </p>
-      )}
-      <div className="cardgrid" style={{ marginTop: 12, ['--card-w' as string]: '132px' }}>
+      <div className="handrow">
+        {cards.length === 0 && (
+          <p className="muted" style={{ margin: 'auto 8px' }}>
+            {dropping ? 'Drop to return it to hand.' : 'Empty.'}
+          </p>
+        )}
         {cards.map(card => (
-          <div className="cardtile" key={card.uid}>
-            <div
-              className="open draggable"
-              role="button"
-              tabIndex={0}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onZoom(card) } }}
-              style={{
-                outline: selected === card.uid ? '3px solid var(--tint-mag)' : undefined,
-              }}
-              {...dragProps(card, zone, () => onZoom(card))}>
-              <CardArt cardId={card.card_id} name={card.name}
-                       typeLine={card.type_line} variant="small" />
-              <span className="vh">Open {card.name}</span>
-            </div>
-            <div className="steppers">
-              <button className="btn btn-sm"
-                      aria-pressed={selected === card.uid}
-                      onClick={() => onSelect(selected === card.uid ? null : card.uid)}>
-                {selected === card.uid ? 'Cancel' : 'Move'}
-                <span className="vh"> {card.name}</span>
-              </button>
-            </div>
+          <div key={card.uid}
+               className="handcard draggable"
+               role="button"
+               tabIndex={0}
+               aria-label={`${card.name} — open`}
+               onKeyDown={e => {
+                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onZoom(card) }
+               }}
+               style={{ outline: selected === card.uid ? '3px solid var(--tint-mag)' : undefined }}
+               {...dragProps(card, 'hand', () => onZoom(card))}>
+            <CardArt cardId={card.card_id} name={card.name}
+                     typeLine={card.type_line} variant="small" />
           </div>
         ))}
       </div>
+    </section>
+  )
+}
+
+/** Library, graveyard, exile and command as stacked piles rather than grids.
+ *  Sixteen library cards laid out individually pushed everything else off the
+ *  screen; a pile with a count is how the zone reads on a table. */
+function Pile(
+  { zone, cards, dropping, dragProps, onZoom, facedown, hint, onActivate }: {
+    zone: Zone
+    cards: CardState[]
+    dropping: boolean
+    dragProps: (card: CardState, from: Zone, onTapLike: () => void) => Record<string, unknown>
+    onZoom: (card: CardState) => void
+    facedown?: boolean
+    hint?: string
+    onActivate?: () => void
+  },
+) {
+  const [open, setOpen] = useState(false)
+  const top = cards[0]
+
+  return (
+    <section className={`pile${dropping ? ' dropping' : ''}`}
+             data-zone={zone} aria-labelledby={`zone-${zone}`}>
+      <div className="mat-label">
+        <h3 id={`zone-${zone}`}>{ZONE_LABELS[zone]}</h3>
+        <span>{cards.length}</span>
       </div>
+
+      <div className="pilebody">
+        {!top && (
+          <p className="muted" style={{ margin: 0, fontSize: 12 }}>
+            {dropping ? 'Drop here' : 'Empty'}
+          </p>
+        )}
+        {top && facedown && (
+          <button className="cardback" onClick={onActivate}
+                  aria-label={`${cards.length} cards in the library. ${hint ?? ''}`}>
+            <span>{cards.length}</span>
+          </button>
+        )}
+        {top && !facedown && (
+          <div className="piletop draggable" role="button" tabIndex={0}
+               aria-label={`${top.name}, top of ${ZONE_LABELS[zone].toLowerCase()} — open`}
+               onKeyDown={e => {
+                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onZoom(top) }
+               }}
+               {...dragProps(top, zone, () => onZoom(top))}>
+            <CardArt cardId={top.card_id} name={top.name}
+                     typeLine={top.type_line} variant="small" />
+          </div>
+        )}
+      </div>
+
+      {hint && <p className="pilehint">{hint}</p>}
+      {cards.length > 1 && !facedown && (
+        <button className="btn btn-sm btn-quiet pileall" onClick={() => setOpen(o => !o)}>
+          {open ? 'Hide' : `All ${cards.length}`}
+        </button>
+      )}
+
+      {open && (
+        <div className="pilelist">
+          {cards.map(card => (
+            <div key={card.uid} className="handcard draggable" role="button" tabIndex={0}
+                 aria-label={`${card.name} — open`}
+                 onKeyDown={e => {
+                   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onZoom(card) }
+                 }}
+                 {...dragProps(card, zone, () => onZoom(card))}>
+              <CardArt cardId={card.card_id} name={card.name}
+                       typeLine={card.type_line} variant="small" />
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
@@ -529,25 +607,21 @@ function Battlefield(
   const chosen = cards.find(c => c.uid === selected)
 
   return (
-    <section className="tile" data-zone="battlefield" aria-labelledby="zone-battlefield">
-      <div className="spread">
-        <h3 id="zone-battlefield" style={{ margin: 0 }}>Battlefield</h3>
-        <div className="row" style={{ gap: 8 }}>
-          <span className="muted">{cards.length} permanent{cards.length === 1 ? '' : 's'}</span>
-          <button className="btn btn-sm" onClick={onTidy} disabled={cards.length === 0}>
-            Tidy up
-          </button>
-        </div>
+    <section className="mat-battlefield" data-zone="battlefield"
+             aria-labelledby="zone-battlefield">
+      <div className="mat-label">
+        <h3 id="zone-battlefield">Battlefield</h3>
+        <span>{cards.length}</span>
+        <button className="btn btn-sm btn-quiet" onClick={onTidy}
+                disabled={cards.length === 0} style={{ marginLeft: 'auto' }}>
+          Tidy up
+        </button>
       </div>
-      <p className="muted" style={{ margin: '6px 0 10px' }}>
-        Drag cards anywhere. Click one to tap it. Arrow keys nudge whatever is
-        selected — hold Shift to move further.
-      </p>
 
       <div className={`field${dropping ? ' dropping' : ''}`} ref={field} data-field>
         {cards.length === 0 && (
           <p className="muted" style={{ padding: 16 }}>
-            Nothing in play. Select a card in hand and send it to the battlefield.
+            Drag a card here from your hand.
           </p>
         )}
         {cards.map(card => (
