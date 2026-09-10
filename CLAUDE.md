@@ -179,6 +179,11 @@ FastAPI serves as a single-page app. Same arrangement as the server dashboard.
   card on pointerdown rendered a panel above the battlefield and pushed it down,
   so cards landed well away from where they were dropped. Selection UI is
   suppressed while a ghost exists, and only the battlefield selects on press.
+- **Feedback for a selection must be pinned to the viewport, not placed in the
+  flow.** The destination bar rendered above the playmat, which put it ~370px
+  off the top of the screen whenever the hand was in view — clicking a card
+  worked perfectly and looked like it did nothing. If an action's only feedback
+  can scroll out of sight, the feature is invisible and therefore broken.
 - **Handle `pointercancel`.** The browser takes a gesture over for a scroll,
   an edge swipe or a second finger; without cleanup the ghost sticks and the
   card never lands. The hand is a horizontal scroll container, which is exactly

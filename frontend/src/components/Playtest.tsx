@@ -170,6 +170,18 @@ export default function Playtest({ id }: { id: number }) {
     return () => document.removeEventListener('fullscreenchange', onChange)
   }, [])
 
+  const onField = useCallback(
+    (uid: string) => zones?.battlefield.some(c => c.uid === uid) ?? false, [zones])
+
+  const tapCard = useCallback((uid: string) => setZones(p => p && {
+    ...p, battlefield: p.battlefield.map(c => c.uid === uid ? { ...c, tapped: !c.tapped } : c),
+  }), [])
+
+  const counterCard = useCallback((uid: string, delta: number) => setZones(p => p && {
+    ...p, battlefield: p.battlefield.map(c =>
+      c.uid === uid ? { ...c, counters: Math.max(0, c.counters + delta) } : c),
+  }), [])
+
   const moveTo = useCallback((uid: string, to: Zone, x?: number, y?: number) => {
     move(uid, to, false, x != null && y != null ? { x, y } : undefined)
   }, [move])
@@ -362,29 +374,6 @@ export default function Playtest({ id }: { id: number }) {
         </div>
       </div>
 
-      {chosen && !ghost && !zones.battlefield.some(c => c.uid === chosen.uid) && (
-        <div className="tile" role="status">
-          <div className="row" style={{ alignItems: 'center' }}>
-            <strong style={{ flex: '1 1 200px' }}>{chosen.name} selected</strong>
-            <span className="muted">Send to:</span>
-            {ZONES.map(z => (
-              <button key={z} className="btn btn-sm" onClick={() => move(chosen.uid, z)}>
-                {ZONE_LABELS[z]}
-              </button>
-            ))}
-            <button className="btn btn-sm" onClick={() => move(chosen.uid, 'library', true)}>
-              Bottom of library
-            </button>
-            <button className="btn btn-sm" onClick={() => setZoom({ o: chosen.oracle_id, c: chosen.card_id })}>
-              Read card
-            </button>
-            <button className="btn btn-sm btn-quiet" onClick={() => setSelected(null)}>
-              Cancel <kbd>Esc</kbd>
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* One playmat: battlefield, hand and the piles all in view at once, so
           a card only ever travels a short distance and nothing has to be
           scrolled to reach a drop target. */}
@@ -392,22 +381,11 @@ export default function Playtest({ id }: { id: number }) {
         <Battlefield
           cards={zones.battlefield}
           selected={selected}
-          onSelect={setSelected}
           onWidth={w => { fieldWidth.current = w }}
           dragProps={dragProps}
-          dragging={ghost !== null}
           dropping={overZone === 'battlefield'}
           onPlace={placeOnField}
-          onTap={uid => setZones(p => p && {
-            ...p, battlefield: p.battlefield.map(c =>
-              c.uid === uid ? { ...c, tapped: !c.tapped } : c),
-          })}
-          onCounter={(uid, delta) => setZones(p => p && {
-            ...p, battlefield: p.battlefield.map(c =>
-              c.uid === uid ? { ...c, counters: Math.max(0, c.counters + delta) } : c),
-          })}
-          onZoom={c => setZoom({ o: c.oracle_id, c: c.card_id })}
-          onMove={move}
+          onTap={tapCard}
           onTidy={() => setZones(p => p && {
             ...p, battlefield: p.battlefield.map((c, i) => ({
               ...c, ...nextSpot(p.battlefield.slice(0, i), fieldWidth.current),
@@ -430,6 +408,42 @@ export default function Playtest({ id }: { id: number }) {
           ))}
         </div>
       </div>
+
+      {/* Pinned to the bottom of the screen, not placed in the flow. In the
+          flow it rendered above the playmat and was hundreds of pixels off
+          the top of the viewport whenever the hand was in view, so clicking a
+          card looked like it did nothing. */}
+      {chosen && !ghost && (
+        <div className="actionbar" role="status">
+          <div className="actionbar-inner">
+            <strong className="actionbar-name">{chosen.name}</strong>
+            {onField(chosen.uid) && (
+              <>
+                <button className="btn btn-sm" onClick={() => tapCard(chosen.uid)}>
+                  {chosen.tapped ? 'Untap' : 'Tap'}
+                </button>
+                <button className="btn btn-sm" onClick={() => counterCard(chosen.uid, 1)}
+                        aria-label={`Add a counter to ${chosen.name}`}>+1</button>
+                <button className="btn btn-sm" onClick={() => counterCard(chosen.uid, -1)}
+                        aria-label={`Remove a counter from ${chosen.name}`}>−1</button>
+              </>
+            )}
+            <span className="muted">Send to:</span>
+            {ZONES.filter(z => !(onField(chosen.uid) && z === 'battlefield')).map(z => (
+              <button key={z} className="btn btn-sm" onClick={() => move(chosen.uid, z)}>
+                {ZONE_LABELS[z]}
+              </button>
+            ))}
+            <button className="btn btn-sm"
+                    onClick={() => setZoom({ o: chosen.oracle_id, c: chosen.card_id })}>
+              Read card
+            </button>
+            <button className="btn btn-sm btn-quiet" onClick={() => setSelected(null)}>
+              Cancel <kbd>Esc</kbd>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* The card following the pointer. pointer-events:none so the hit test
           underneath finds the zone rather than the ghost itself. */}
@@ -587,20 +601,14 @@ function Pile(
  *  the arrow keys nudge whichever card is selected. Pointer events rather than
  *  HTML5 drag-and-drop, because HTML5 drag does not work on touch. */
 function Battlefield(
-  { cards, selected, onSelect, onPlace, onTap, onCounter, onZoom, onMove, onTidy,
-    onWidth, dragProps, dragging, dropping }: {
+  { cards, selected, onPlace, onTap, onTidy, onWidth, dragProps, dropping }: {
     cards: CardState[]
     selected: string | null
-    onSelect: (uid: string | null) => void
     onPlace: (uid: string, x: number, y: number) => void
     onTap: (uid: string) => void
-    onCounter: (uid: string, delta: number) => void
-    onZoom: (card: CardState) => void
-    onMove: (uid: string, to: Zone) => void
     onTidy: () => void
     onWidth: (w: number) => void
     dragProps: (card: CardState, from: Zone, onTapLike: () => void) => Record<string, unknown>
-    dragging: boolean
     dropping: boolean
   },
 ) {
@@ -642,7 +650,6 @@ function Battlefield(
     return () => removeEventListener('keydown', onKey)
   }, [selected, cards, onPlace])
 
-  const chosen = cards.find(c => c.uid === selected)
 
   return (
     <section className="mat-battlefield" data-zone="battlefield"
@@ -681,33 +688,6 @@ function Battlefield(
         ))}
       </div>
 
-      {chosen && !dragging && (
-        <div style={{ marginTop: 12 }} role="group"
-             aria-label={`Actions for ${chosen.name}`}>
-          <div className="row">
-            <strong style={{ flex: '1 1 160px' }}>{chosen.name}</strong>
-            <button className="btn btn-sm" onClick={() => onTap(chosen.uid)}>
-              {chosen.tapped ? 'Untap' : 'Tap'}
-            </button>
-            <button className="btn btn-sm" onClick={() => onCounter(chosen.uid, 1)}
-                    aria-label={`Add a counter to ${chosen.name}`}>+1 counter</button>
-            <button className="btn btn-sm" onClick={() => onCounter(chosen.uid, -1)}
-                    aria-label={`Remove a counter from ${chosen.name}`}>−1 counter</button>
-            <button className="btn btn-sm" onClick={() => onZoom(chosen)}>Read card</button>
-            <button className="btn btn-sm btn-quiet" onClick={() => onSelect(null)}>
-              Deselect <kbd>Esc</kbd>
-            </button>
-          </div>
-          <div className="row" style={{ marginTop: 8 }}>
-            <span className="muted">Send to:</span>
-            {(['hand', 'graveyard', 'exile', 'library', 'command'] as Zone[]).map(z => (
-              <button key={z} className="btn btn-sm" onClick={() => onMove(chosen.uid, z)}>
-                {ZONE_LABELS[z]}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </section>
   )
 }

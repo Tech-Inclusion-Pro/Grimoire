@@ -507,3 +507,30 @@ input[type="range"] { height: 32px; accent-color: var(--magenta); }
 /* The mat takes the whole screen when there is no page around it. */
 .playshell.fullscreen .playmat { min-height: calc(100vh - 190px); }
 .playshell.fullscreen h1 { font-size: 20px; }
+
+/* ---------- selected-card action bar ---------- */
+/* Fixed, never in the flow. In the flow it sat above the playmat and was
+   several hundred pixels off the top of the screen whenever the hand was in
+   view, so clicking a card looked like nothing happened. */
+.actionbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
+  background: rgba(14, 10, 32, .97);
+  border-top: 1px solid var(--glass-lit);
+  box-shadow: 0 -10px 30px rgba(0,0,0,.5);
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+.actionbar-inner {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  max-width: 1500px; margin: 0 auto;
+}
+.actionbar-name {
+  flex: 1 1 150px; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Keep the bar from covering the last row of the playmat. */
+.playshell { padding-bottom: 96px; }
+@media (max-width: 560px) {
+  .actionbar-inner { gap: 6px; }
+  .actionbar-name { flex: 1 0 100%; }
+}
